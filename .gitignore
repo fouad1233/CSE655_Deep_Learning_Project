@@ -5,7 +5,7 @@ __pycache__/
 .ipynb_checkpoints/
 
 # data and large artifacts (re-created by scripts)
-data/
+/data/
 checkpoints/
 *.pt
 *.pth
