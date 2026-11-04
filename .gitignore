@@ -1,0 +1,21 @@
+# environments
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# data and large artifacts (re-created by scripts)
+data/
+checkpoints/
+*.pt
+*.pth
+!weights/final/*.pt
+
+# Claude Code: personal settings stay local, shared context is committed
+.claude/settings.local.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
