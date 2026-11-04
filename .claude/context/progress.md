@@ -9,7 +9,12 @@ Newest entries on top. Each entry: date, machine, what was done, decisions (with
 - Distribution barely changed: the largest change in any gender/race/age-band share is 0.22 percentage points. R2 removed relatively more Indian (22.8 % vs. 16.8 %) and Others (12.8 % vs. 7.1 %) images.
 - Added `scripts/run_notebook_cells.py` (run only selected cells).
 
-**Not decided yet (user):** greyscale photos (868), the pencil drawing, anything else. Still in the analysis/cleaning phase; no split yet.
+**Decided later the same day (user):**
+- **R4:** remove the pencil drawing `76_0_1_20170116205556715.jpg.chip.jpg` (not a photo), leaving **23,053 clean images**. **Mention it in the report** (one sentence; the user agreed after first wanting to leave it out).
+- **Keep the greyscale images (868).** Handle the shortcut with random-greyscale augmentation and report the error on b&w vs. colour test images. Optional ablation: greyscale (1-channel) input for the own CNN (green angle).
+- `docs/report_notes.md` started: facts and sentences the report must include.
+
+**Still open:** anything else the user wants to analyse; no split yet.
 
 ## 2026-11-04 (2) · work-pc
 **Done**
