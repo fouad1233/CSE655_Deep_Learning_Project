@@ -25,6 +25,8 @@ Everything durable about the project lives **in this repo**, not in machine-loca
 - The user must be able to defend every line and number in the exam. Explain design choices and show hand calculations next to code; don't just hand over code.
 - Every run costs CO2 and counts against the footprint grade. Think before running, test on tiny subsets, and avoid "just to be sure" runs.
 - Keep code identical across machines; only `--device` / config values may differ.
+- **The user drives the phases.** Don't move to the next step (e.g. cleaning, split, training) on your own. Finish the current analysis and let the user decide what comes next and which cleaning rules to apply.
+- Git identity for this repo is set **per repo** (`git config user.name fouad1233`). The global config on the work PC belongs to the user's work repos; don't touch it.
 
 ## Machines (one repo, synced via GitHub: fouad1233/CSE655_Deep_Learning_Project)
 | Name | Hardware | Use | torch device |

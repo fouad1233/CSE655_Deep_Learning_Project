@@ -13,6 +13,9 @@ Newest entries on top. Each entry: date, machine, what was done, decisions (with
 - Age: mean 33.3, median 29, std 19.9, right-skewed; strong age heaping at 40–90. Mean-predictor MAE ≈ 15.35, so the 0.6 × rule needs ≲ 9.2 y.
 - Race imbalanced (Others 7 %), and age and race/gender are confounded. The per-group bias analysis must control for age (per age band, or improvement over the constant baseline).
 
+- Later additions: notebook sections 2.1–2.3 (how the MD5 check works, duplicate/conflict bar charts, 8-column duplicate gallery) and 6.1 (greyscale on all images: 679 = 2.86 %, rarer among children and non-White/Black groups).
+- **The user said the analysis continues first; the user will decide the cleaning.** The list below is only a proposal.
+
 **Decisions (proposed, confirm with user)**
 - Drop the 5 malformed files and the conflicting duplicate groups; keep one copy of each consistent duplicate group.
 - Split 70/15/15, seeded, stratified by age band × race.
