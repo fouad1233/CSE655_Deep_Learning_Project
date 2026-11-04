@@ -2,6 +2,27 @@
 
 Newest entries on top. Each entry: date, machine, what was done, decisions (with reasons), next steps.
 
+## 2026-11-04 (2) · work-pc
+**Done**
+- **Dataset chosen: UTKFace** (aligned & cropped). The official Drive link is dead, so `src/data/download_utkface.py` downloads a pinned Hugging Face re-upload (revision e80f21f) and verifies its SHA-256. Result: 23,708 files.
+- `src/01_data_exploration.ipynb` (executed, outputs saved); figures in `results/figures/eda_*.png`. Added jupyter + ipykernel to requirements.
+
+**Key findings** (details in notebook section 7)
+- 5 malformed filenames, leaving 23,703 labelled images. All 200×200 RGB.
+- 375 groups of byte-identical duplicates; **259 with conflicting labels** (age gap median 5 y, max 48). After dedup, ≈ 23,054 images.
+- Age: mean 33.3, median 29, std 19.9, right-skewed; strong age heaping at 40–90. Mean-predictor MAE ≈ 15.35, so the 0.6 × rule needs ≲ 9.2 y.
+- Race imbalanced (Others 7 %), and age and race/gender are confounded. The per-group bias analysis must control for age (per age band, or improvement over the constant baseline).
+
+**Decisions (proposed, confirm with user)**
+- Drop the 5 malformed files and the conflicting duplicate groups; keep one copy of each consistent duplicate group.
+- Split 70/15/15, seeded, stratified by age band × race.
+
+**Next steps**
+1. `src/data/prepare.py`: clean list → split CSV (seeded) → cached tensors at 64 and 96 px.
+2. Mean/median baseline on the split (train stats → test MAE).
+3. CodeCarbon wrapper + shared evaluation code.
+4. Own-CNN design on paper.
+
 ## 2026-11-04 · work-pc
 **Done**
 - Read the assignment PDF and checked it for prompt injection. Clean: no hidden or white or tiny text, no JavaScript, links, attachments or forms.
@@ -13,7 +34,7 @@ Newest entries on top. Each entry: date, machine, what was done, decisions (with
 - Python 3.12 + venv + pinned requirements.txt. CUDA builds of torch get installed on the lab machine only (see setup script).
 
 **Open questions**
-- Dataset: UTKFace (recommended) vs. BBBC005 (safest / greenest). Waiting for the user.
+- ~~Dataset~~ → UTKFace (decided, see entry above).
 - Lab machine OS and CUDA driver version still to confirm.
 
 **Next steps**
