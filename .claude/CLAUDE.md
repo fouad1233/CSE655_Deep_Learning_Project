@@ -26,6 +26,7 @@ Everything durable about the project lives **in this repo**, not in machine-loca
 - Every run costs CO2 and counts against the footprint grade. Think before running, test on tiny subsets, and avoid "just to be sure" runs.
 - Keep code identical across machines; only `--device` / config values may differ.
 - **The user drives the phases.** Don't move to the next step (e.g. cleaning, split, training) on your own. Finish the current analysis and let the user decide what comes next and which cleaning rules to apply.
+- **Notebooks: run only the new/changed cells**, not the whole notebook: `python scripts/run_notebook_cells.py NB --list`, then `--deps <cells that build the needed state> --run <new cells>`. Re-run everything only if the user asks.
 - Git identity for this repo is set **per repo** (`git config user.name fouad1233`). The global config on the work PC belongs to the user's work repos; don't touch it.
 
 ## Machines (one repo, synced via GitHub: fouad1233/CSE655_Deep_Learning_Project)
