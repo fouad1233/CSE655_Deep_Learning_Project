@@ -1,11 +1,12 @@
 # Report notes (things the technical report must mention)
 
-Collected while working, so nothing is forgotten when the report is written. Numbers come from `src/01_data_exploration.ipynb`.
+Collected while working, so nothing is forgotten when the report is written. Numbers come from `src/01_data_exploration.ipynb` (section numbers as of the 2026-11-04 restructure).
 
 ## Dataset and cleaning (Section: problem and dataset)
 - UTKFace aligned & cropped, 23,708 files (200×200 RGB). Source: the official Google Drive link is dead, so we used a Hugging Face re-upload pinned by revision and verified by SHA-256. Cite Zhang, Song & Qi (CVPR 2017); non-commercial research licence.
 - Label noise found by MD5 hashing: 375 groups of byte-identical images, of which 259 have conflicting labels (age gap up to 48 years). Limitation: only exact copies are detected, not re-encoded near-duplicates.
-- Cleaning (notebook section 8):
+- Images: all 200×200 RGB, aligned & cropped faces. Tensor (C,H,W) = (3,200,200), 120,000 values. Input resolution is the main efficiency knob: conv cost ∝ H×W (64 px ≈ 0.10×, 96 px ≈ 0.23×, 128 px ≈ 0.41× of 200 px). Figure: `results/figures/eda_resolutions.png`.
+- Cleaning (notebook section 9):
   - R1: drop 5 malformed filenames.
   - R2: drop all 531 images of conflicting duplicate groups.
   - R3: keep one copy of each consistent group (118 dropped).
