@@ -13,7 +13,7 @@ Newest entries on top. Each entry: date, machine, what was done, decisions (with
 - Age: mean 33.3, median 29, std 19.9, right-skewed; strong age heaping at 40–90. Mean-predictor MAE ≈ 15.35, so the 0.6 × rule needs ≲ 9.2 y.
 - Race imbalanced (Others 7 %), and age and race/gender are confounded. The per-group bias analysis must control for age (per age band, or improvement over the constant baseline).
 
-- Later additions: notebook sections 2.1–2.3 (how the MD5 check works, duplicate/conflict bar charts, 8-column duplicate gallery) and 6.1 (greyscale on all images: 679 = 2.86 %, rarer among children and non-White/Black groups).
+- Later additions: notebook sections 2.1–2.3 (how the MD5 check works, duplicate/conflict bar charts, 8-column duplicate gallery) and 6.1 (greyscale on all images). The first detector (mean|R−G| < 2) missed tinted/sepia prints and was replaced by a tint-free chroma score tf < 2.5, chosen visually per score band and backed by a sensitivity table (6.1.1): **868 b&w images = 3.66 %**, rare among children (0–2: 0.7 %) and Asian/Indian/Others (~1.5–1.8 %), most common among White (5.4 %). 61 images sit in an ambiguous zone (tf 2–3). At least one pencil drawing is in the data.
 - **The user said the analysis continues first; the user will decide the cleaning.** The list below is only a proposal.
 
 **Decisions (proposed, confirm with user)**

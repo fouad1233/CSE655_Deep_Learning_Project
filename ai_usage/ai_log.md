@@ -23,6 +23,7 @@ Put full chat exports in `ai_usage/transcripts/` (Claude Code: export each sessi
 | # | Date | What the AI said | How I detected it | Fix |
 |---|---|---|---|---|
 | – (rejected) | 2026-11-04 | Said UTKFace has "about 23k" images, from memory | Counted after download: 23,708 files. The claim was correct, so this is **not** a mistake case | – |
+| 2 | 2026-11-04 | Greyscale detector "mean \|R−G\| < 2" reported 679 b&w images (2.86 %) as fact | **I** saw clearly b&w (sepia/tinted) photos in the "just above the threshold" gallery and asked why they count as colour | Tinted prints shift R vs. G uniformly, so the score was wrong, not just the threshold. Replaced by a tint-free chroma score (tf < 2.5), chosen by looking at images per score band plus a sensitivity table: 868 images (3.66 %), 189 more |
 | 1 (candidate) | 2026-11-04 | First dataset summary called UTKFace clean ("labels in filenames, loading is trivial") | The duplicate check in the notebook found 5 malformed filenames and 259 duplicate groups with conflicting labels | Cleaning step before the split; mention the label noise in the report |
 
 ## How I verified AI output
