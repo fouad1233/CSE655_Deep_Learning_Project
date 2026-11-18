@@ -65,6 +65,19 @@ Newest entries on top. Each entry: date, machine, what was done, decisions (with
 
 12.1 Findings figure `results/figures/findings_standard_models.png` (notebook 02 cell 32, plotting only): (a) test MAE vs train CO2 (log) with Pareto front = ResNet18 A (1.40 g, 4.888) → ResNet18 full (2.65 g, 4.768), both MNV3 configs dominated, own-CNN limit line 5.483; (b) MFLOPs vs Wh/epoch; (c) test MAE per age band vs baseline; (d) val vs test MAE.
 
+13. **Age bias check (user question: "is the model biased to older ages because some age groups have more images?"; notebook 02 section 13, cell 34, val set only because a balancing decision would be tuning).** One tracked val pass for the 4 models (`eval_val_error_by_age`, 0.215 Wh / 0.10 g). Per-image val predictions → `results/predictions/val_<run>.csv`; table → `results/error_by_age_val.csv`; figure → `results/figures/error_by_age_val.png`.
+   ResNet18 full, bias = mean(pred − age): 0–2 +0.06, 3–12 +1.10, 13–19 +2.52, 20–29 +2.00, 30–39 −0.09, 40–49 −2.26, 50–59 −1.99, 60–69 −1.84, 70–79 −4.55, 80+ −7.61; overall bias −0.05 (no global "too old" bias). Same pattern in all 4 models (stronger in MNV3 / option A, 80+: −6 to −10).
+   **Finding:** not "always older" but **regression to the mean**: under the dense 20–39 region predictions are too old, above it too young, growing with distance (80+ predicted 21 % of the time too old). Training count alone does not explain MAE (Spearman(n_train, MAE) = −0.42, but 0–2 has few images and the lowest MAE; relative MAE ≈ 10–16 % for all adults). Larger absolute error for old people is partly natural (ageing cues vary more), the signed bias is the part balancing could fix.
+   Options discussed (not decided, each costs a training run): inverse-frequency loss weights per band (e.g. sqrt), oversampling rare bands, label-distribution smoothing (LDS), or post-hoc linear calibration fitted on val. Risk: lower bias at 70+ usually costs some MAE in 20–39, which holds 46 % of the data, so overall MAE may rise.
+
+14. **Balanced-loss experiment (user decision): ResNet18 full with √(inverse frequency) weighted L1, `resnet18_full_sqrtw_run01`** (notebook 02 section 14, cell 36; `train_model(..., sample_weights=...)` added, default unchanged). w_b = c/√n_b, c = N/Σ√n_b = 16,131/374.6 = 43.06 → 20–29: 0.611, 80+: 2.012 (3.3× ratio); average weight 1. Same seed/batches/augmentation/lr as run01; best epoch picked by plain val MAE; **val only, test not used.** 5.64 Wh / 2.62 g (+ val pass 0.018 Wh).
+   | loss | val MAE | balanced MAE (mean of 10 bands) | overall bias | worst band |
+   |---|---|---|---|---|
+   | plain L1 (run01) | **4.762** | **5.357** | −0.05 | 9.08 (80+) |
+   | weighted L1 | 4.960 | 5.409 | −0.00 | 8.97 (80+) |
+   Per band: better at 0–2 (−0.20), 13–19 (−0.34), 70–79 (−0.45, bias −4.55 → −3.18), 80+ (−0.11, bias barely moved −7.61 → −7.19); worse at 20–29 (+0.34), 30–39 (+0.31), 40–49 (+0.60). Best epoch 8 (val curve noisier).
+   **Conclusion: balancing does not pay off here.** Overall MAE +0.20 y (worse), and even the balanced MAE is slightly worse; the old-age bias shrinks only partly. Likely reasons: the weighted loss has a smaller effective sample size, (Σw)²/Σw² = N²/(10·c²) ≈ 14,035 instead of 16,131 (−13 %), so gradients are noisier; and the old-age error is largely real ambiguity, not just too few examples. Caveat: one seed only, differences ≈ 0.2 y may partly be seed noise. Plain L1 stays the choice; the bias goes in the report as a finding + this negative result. Project total **42.59 Wh, 19.78 g CO2eq**.
+
 **Next (user decides):** own CNN design on paper (per-layer shapes, params, receptive field, MACs) with the target **test MAE ≤ 5.48** at the lowest CO2; age-controlled bias analysis; error-vs-CO2 Pareto plot once the own CNN exists.
 
 ## 2026-11-05 · work-pc
