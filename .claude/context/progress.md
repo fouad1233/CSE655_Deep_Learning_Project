@@ -2,6 +2,30 @@
 
 Newest entries on top. Each entry: date, machine, what was done, decisions (with reasons), next steps.
 
+## 2026-11-05 · work-pc
+**Done (deck, at the user's request; no training, no CO2 runs):**
+- After a slide comment, slide 3 now defines every symbol (H, W, k, s, p, C_in, C_out, ⌊ ⌋, params, MAC) with a step-by-step ResNet18 conv1 example, and 4 glossary slides explain 40 terms in plain words.
+- 6 new slides (15–20) count **every ResNet18 parameter by hand**: rules (conv k·k·C_in·C_out with bias=False; BN 2·C = γ, β, running stats are buffers; Linear C_in·C_out + C_out; ReLU/pool/⊕ = 0; stride and padding never change params), then stem+layer1, layer2, layer3, layer4 (PyTorch name, weight shape, formula, BN, sum) and the total. Deck is now 42 slides.
+- Exam numbers (checked against `named_parameters()`, torchvision 0.29.2): stem 9,536 · layer1 147,968 · layer2 525,568 · layer3 2,099,712 · layer4 8,393,728 · fc 513 → **11,177,025** (conv 11,166,912 + BN 9,600 + fc 513). With the ImageNet head: 11,689,512. Shortcut: layer2–4 conv weights = 32·C² (C = output channels).
+
+- User caught that the deck used 128 px everywhere without saying the standard (ImageNet) input is 224×224 (logged as AI mistake case 3). Facts for the input-size decision, measured on torchvision 0.29.2: ResNet18 params are identical at any size (AdaptiveAvgPool before fc); MACs with the 1-output head: 224 px 1.814 G, 200 px (UTKFace native) 1.556 G, 128 px 0.592 G. layer4 map: 7×7 at 224 and 200, 4×4 at 128. Pretrained weights' transforms: resize 256, crop 224.
+- New deck section "Input size" (slides 10–13, deck now 46 slides): where 224 comes from (He et al. §3.4, quotes checked in the PDF), which layer types work at any H×W (only fc needs a fixed 512), how AdaptiveAvgPool2d((1,1)) bridges any size to 512 (torchvision resnet.py lines 205, 276–280), a shape trace at 224/200/128 with the H_out rule, and what changes (maps, MACs, memory, detail, pre-training scale; Touvron et al. 2019, arXiv:1906.06423) vs. what does not (params, layers, channels, weights, file).
+
+**Handoff to the lab machine (2× RTX 5090), 2026-11-18:** the user continues there with the model-design phase. Setup on lab:
+1. Fresh `git clone` (history was rewritten on 2026-11-04; an old clone must not be pulled/merged), then `git config user.name fouad1233` and `git config user.email fouadiadhami@gmail.com` (repo-local).
+2. `TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128 bash scripts/setup_env.sh` (Blackwell needs a CUDA ≥ 12.8 build; if that index has no wheel for the pinned torch, pick the matching cu12x/cu13x index), then `python scripts/check_env.py` (must list sm_120 and see 2 GPUs).
+3. `python src/data/download_utkface.py` (SHA-256 checked), then regenerate the clean CSVs with the command in entry (3) below → 23,053 rows.
+4. Record `lab` as the machine in every run log; CodeCarbon on every training/eval run, including tests.
+
+**Still open:** the same user decisions as in entry (5) below (which two models, **input size: 224 / 200 / 128**, fine-tuning plan).
+
+## 2026-11-04 (5) · work-pc
+**Plan change (user):** train the **standard models first**, then the own CNN. Reasons: know MAE_best (the target) early, debug the pipeline on known-good models, learn a training recipe. Conditions agreed in discussion: build the shared pipeline first (split, cached images, eval, CodeCarbon); compare on **validation** MAE during development, test once at the end; same split, input size and training seed for all models; final runs on one machine (lab) so energy is comparable.
+**Done:** slide deck "Standard CNN Architectures for Age Regression" (claude.ai artifact https://claude.ai/artifact/L4EgPavVkVXqQiDddgDfdx, 23 slides): every candidate architecture layer by layer, real learned kernels, torchvision code, comparison, recommendation. Numbers come from `scripts/model_facts.py` → `results/model_facts.json` (torchvision 0.29.2).
+- Later: paper-style 3D architecture diagrams (tensors as cuboids, kernels drawn at true scale on their input, shapes and params under every layer, residual/concat/SE arcs). Renderer `src/viz/arch_diagram.py` (reusable for the **own CNN** figure in the report); `scripts/draw_standard_archs.py` builds them from forward hooks → `results/figures/arch/*.png` (9 figures). Added as 9 slides; deck is now 32 slides.
+**Recommendation (not yet decided by user):** fine-tune **ResNet18 (IMAGENET1K_V1)** + **MobileNetV3-Large**; runner-up EfficientNet-B0.
+**Open decisions for the user:** (1) input size for all models (128 px suggested), (2) fine-tune both vs MobileNetV3 from scratch, (3) MobileNetV3-L V1 (74.0 %, 600-epoch recipe) vs V2 (75.3 %), (4) head-first then unfreeze vs full fine-tuning.
+
 ## 2026-11-04 (4) · work-pc
 **Done:** notebook restructured at the user's request:
 - "Look at the images" moved to the top as **section 2**: 2.1 image dimensions / tensor shapes (all 23,703 images are 200×200 RGB; NumPy (H,W,C) = (200,200,3), torch (C,H,W) = (3,200,200), 120,000 values) with a memory/compute table per input resolution; 2.2 random examples; 2.3 the same faces at 200/128/96/64/48/32 px (`results/figures/eda_resolutions.png`).

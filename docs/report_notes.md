@@ -14,6 +14,9 @@ Collected while working, so nothing is forgotten when the report is written. Num
   - Result: 23,053 images. Label distributions change by at most ~0.2 percentage points.
 - Greyscale: 868 images (3.66 %) are black-and-white (tint-free chroma score tf < 2.5; a naive |R−G| test missed sepia prints). **Kept**: valid faces and labels, and removing them would shift the race balance. Shortcut risk ("b&w means not a child", since only 0.7 % of ages 0–2 are b&w) handled by random-greyscale augmentation and measured by reporting the error on b&w vs. colour test images.
 
+## Architecture figures (Sections: own CNN, standard models)
+- `src/viz/arch_diagram.py` draws paper-style 3D diagrams (output tensor per layer, kernel at true scale, shape + params under each layer). Standard models: `python scripts/draw_standard_archs.py` → `results/figures/arch/`. Use the same renderer for the own CNN's figure, so all figures look alike.
+
 ## Bias analysis (Section: bias)
 - Age and group are confounded (0–2 band 39 % Asian; 80+ band 72 % White; women dominate ages 3–29, men 40–69). The constant predictor already gives very different per-group MAE (Black 10.6 vs. White 17.9). So report per-group MAE **within age bands** and/or the improvement over the constant baseline per group.
 - Strong age heaping at 40–90 (multiples of 10 occur 2.4–5.9× more often than their neighbours): many labels of older people are estimates, which puts a floor on the reachable error.

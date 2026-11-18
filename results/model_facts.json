@@ -1,0 +1,1370 @@
+{
+ "torch": "2.15.0+cpu",
+ "torchvision": "0.29.2+cpu",
+ "models": {
+  "resnet18": {
+   "weights": "ResNet18_Weights.IMAGENET1K_V1",
+   "acc1": 69.758,
+   "acc5": 89.078,
+   "num_params_meta": 11689512,
+   "gflops_meta": 1.814,
+   "file_size_mb_meta": 44.661,
+   "recipe": "https://github.com/pytorch/vision/tree/main/references/classification#resnet",
+   "min_size": [
+    1,
+    1
+   ],
+   "params_1000cls": 11689512,
+   "params_regression": 11177025,
+   "gmacs_224_measured": 1.8141,
+   "gmacs_128_regression": 0.5922,
+   "gmacs_64_regression": 0.148,
+   "latency_ms_cpu_128_bs1": 39.5,
+   "head_replaced": "model.fc",
+   "head_in_features": 512,
+   "original_head": "Linear(in_features=512, out_features=1000, bias=True)",
+   "stage_shapes_128": [
+    [
+     "Conv2d",
+     [
+      64,
+      64,
+      64
+     ]
+    ],
+    [
+     "BatchNorm2d",
+     [
+      64,
+      64,
+      64
+     ]
+    ],
+    [
+     "ReLU",
+     [
+      64,
+      64,
+      64
+     ]
+    ],
+    [
+     "MaxPool2d",
+     [
+      64,
+      32,
+      32
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      64,
+      32,
+      32
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      128,
+      16,
+      16
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      256,
+      8,
+      8
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      512,
+      4,
+      4
+     ]
+    ]
+   ]
+  },
+  "resnet50": {
+   "weights": "ResNet50_Weights.IMAGENET1K_V2",
+   "acc1": 80.858,
+   "acc5": 95.434,
+   "num_params_meta": 25557032,
+   "gflops_meta": 4.089,
+   "file_size_mb_meta": 97.79,
+   "recipe": "https://github.com/pytorch/vision/issues/3995#issuecomment-1013906621",
+   "min_size": [
+    1,
+    1
+   ],
+   "params_1000cls": 25557032,
+   "params_regression": 23510081,
+   "gmacs_224_measured": 4.0892,
+   "gmacs_128_regression": 1.3346,
+   "gmacs_64_regression": 0.3336,
+   "latency_ms_cpu_128_bs1": 90.9,
+   "head_replaced": "model.fc",
+   "head_in_features": 2048,
+   "original_head": "Linear(in_features=2048, out_features=1000, bias=True)",
+   "stage_shapes_128": [
+    [
+     "Conv2d",
+     [
+      64,
+      64,
+      64
+     ]
+    ],
+    [
+     "BatchNorm2d",
+     [
+      64,
+      64,
+      64
+     ]
+    ],
+    [
+     "ReLU",
+     [
+      64,
+      64,
+      64
+     ]
+    ],
+    [
+     "MaxPool2d",
+     [
+      64,
+      32,
+      32
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      256,
+      32,
+      32
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      512,
+      16,
+      16
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      1024,
+      8,
+      8
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      2048,
+      4,
+      4
+     ]
+    ]
+   ]
+  },
+  "convnext_tiny": {
+   "weights": "ConvNeXt_Tiny_Weights.IMAGENET1K_V1",
+   "acc1": 82.52,
+   "acc5": 96.146,
+   "num_params_meta": 28589128,
+   "gflops_meta": 4.456,
+   "file_size_mb_meta": 109.119,
+   "recipe": "https://github.com/pytorch/vision/tree/main/references/classification#convnext",
+   "min_size": [
+    32,
+    32
+   ],
+   "params_1000cls": 28589128,
+   "params_regression": 27820897,
+   "gmacs_224_measured": 4.4555,
+   "gmacs_128_regression": 1.4546,
+   "gmacs_64_regression": 0.3637,
+   "latency_ms_cpu_128_bs1": 70.0,
+   "head_replaced": "model.classifier[-1]",
+   "head_in_features": 768,
+   "original_head": "Sequential(\n  (0): LayerNorm2d((768,), eps=1e-06, elementwise_affine=True, bias=True)\n  (1): Flatten(start_dim=1, end_dim=-1)\n  (2): Linear(in_features=768, out_features=1000, bias=True)\n)",
+   "stage_shapes_128": [
+    [
+     "Conv2dNormActivation",
+     [
+      96,
+      32,
+      32
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      96,
+      32,
+      32
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      192,
+      16,
+      16
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      192,
+      16,
+      16
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      384,
+      8,
+      8
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      384,
+      8,
+      8
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      768,
+      4,
+      4
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      768,
+      4,
+      4
+     ]
+    ]
+   ]
+  },
+  "mobilenet_v3_large": {
+   "weights": "MobileNet_V3_Large_Weights.IMAGENET1K_V2",
+   "acc1": 75.274,
+   "acc5": 92.566,
+   "num_params_meta": 5483032,
+   "gflops_meta": 0.217,
+   "file_size_mb_meta": 21.107,
+   "recipe": "https://github.com/pytorch/vision/issues/3995#new-recipe-with-reg-tuning",
+   "min_size": [
+    1,
+    1
+   ],
+   "params_1000cls": 5483032,
+   "params_regression": 4203313,
+   "gmacs_224_measured": 0.2166,
+   "gmacs_128_regression": 0.0721,
+   "gmacs_64_regression": 0.0201,
+   "latency_ms_cpu_128_bs1": 19.4,
+   "head_replaced": "model.classifier[-1]",
+   "head_in_features": 1280,
+   "original_head": "Sequential(\n  (0): Linear(in_features=960, out_features=1280, bias=True)\n  (1): Hardswish()\n  (2): Dropout(p=0.2, inplace=True)\n  (3): Linear(in_features=1280, out_features=1000, bias=True)\n)",
+   "stage_shapes_128": [
+    [
+     "Conv2dNormActivation",
+     [
+      16,
+      64,
+      64
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      16,
+      64,
+      64
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      24,
+      32,
+      32
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      24,
+      32,
+      32
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      40,
+      16,
+      16
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      40,
+      16,
+      16
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      40,
+      16,
+      16
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      80,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      80,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      80,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      80,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      112,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      112,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      160,
+      4,
+      4
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      160,
+      4,
+      4
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      160,
+      4,
+      4
+     ]
+    ],
+    [
+     "Conv2dNormActivation",
+     [
+      960,
+      4,
+      4
+     ]
+    ]
+   ]
+  },
+  "mobilenet_v3_small": {
+   "weights": "MobileNet_V3_Small_Weights.IMAGENET1K_V1",
+   "acc1": 67.668,
+   "acc5": 87.402,
+   "num_params_meta": 2542856,
+   "gflops_meta": 0.057,
+   "file_size_mb_meta": 9.829,
+   "recipe": "https://github.com/pytorch/vision/tree/main/references/classification#mobilenetv3-large--small",
+   "min_size": [
+    1,
+    1
+   ],
+   "params_1000cls": 2542856,
+   "params_regression": 1518881,
+   "gmacs_224_measured": 0.0565,
+   "gmacs_128_regression": 0.0188,
+   "gmacs_64_regression": 0.0055,
+   "latency_ms_cpu_128_bs1": 13.5,
+   "head_replaced": "model.classifier[-1]",
+   "head_in_features": 1024,
+   "original_head": "Sequential(\n  (0): Linear(in_features=576, out_features=1024, bias=True)\n  (1): Hardswish()\n  (2): Dropout(p=0.2, inplace=True)\n  (3): Linear(in_features=1024, out_features=1000, bias=True)\n)",
+   "stage_shapes_128": [
+    [
+     "Conv2dNormActivation",
+     [
+      16,
+      64,
+      64
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      16,
+      32,
+      32
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      24,
+      16,
+      16
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      24,
+      16,
+      16
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      40,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      40,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      40,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      48,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      48,
+      8,
+      8
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      96,
+      4,
+      4
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      96,
+      4,
+      4
+     ]
+    ],
+    [
+     "InvertedResidual",
+     [
+      96,
+      4,
+      4
+     ]
+    ],
+    [
+     "Conv2dNormActivation",
+     [
+      576,
+      4,
+      4
+     ]
+    ]
+   ]
+  },
+  "efficientnet_b0": {
+   "weights": "EfficientNet_B0_Weights.IMAGENET1K_V1",
+   "acc1": 77.692,
+   "acc5": 93.532,
+   "num_params_meta": 5288548,
+   "gflops_meta": 0.386,
+   "file_size_mb_meta": 20.451,
+   "recipe": "https://github.com/pytorch/vision/tree/main/references/classification#efficientnet-v1",
+   "min_size": [
+    1,
+    1
+   ],
+   "params_1000cls": 5288548,
+   "params_regression": 4008829,
+   "gmacs_224_measured": 0.3858,
+   "gmacs_128_regression": 0.126,
+   "gmacs_64_regression": 0.032,
+   "latency_ms_cpu_128_bs1": 29.6,
+   "head_replaced": "model.classifier[-1]",
+   "head_in_features": 1280,
+   "original_head": "Sequential(\n  (0): Dropout(p=0.2, inplace=True)\n  (1): Linear(in_features=1280, out_features=1000, bias=True)\n)",
+   "stage_shapes_128": [
+    [
+     "Conv2dNormActivation",
+     [
+      32,
+      64,
+      64
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      16,
+      64,
+      64
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      24,
+      32,
+      32
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      40,
+      16,
+      16
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      80,
+      8,
+      8
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      112,
+      8,
+      8
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      192,
+      4,
+      4
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      320,
+      4,
+      4
+     ]
+    ],
+    [
+     "Conv2dNormActivation",
+     [
+      1280,
+      4,
+      4
+     ]
+    ]
+   ]
+  },
+  "shufflenet_v2_x1_0": {
+   "weights": "ShuffleNet_V2_X1_0_Weights.IMAGENET1K_V1",
+   "acc1": 69.362,
+   "acc5": 88.316,
+   "num_params_meta": 2278604,
+   "gflops_meta": 0.145,
+   "file_size_mb_meta": 8.791,
+   "recipe": "https://github.com/ericsun99/Shufflenet-v2-Pytorch",
+   "min_size": [
+    1,
+    1
+   ],
+   "params_1000cls": 2278604,
+   "params_regression": 1254629,
+   "gmacs_224_measured": 0.1449,
+   "gmacs_128_regression": 0.047,
+   "gmacs_64_regression": 0.0117,
+   "latency_ms_cpu_128_bs1": 19.6,
+   "head_replaced": "model.fc",
+   "head_in_features": 1024,
+   "original_head": "Linear(in_features=1024, out_features=1000, bias=True)",
+   "stage_shapes_128": [
+    [
+     "Sequential",
+     [
+      24,
+      64,
+      64
+     ]
+    ],
+    [
+     "MaxPool2d",
+     [
+      24,
+      32,
+      32
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      116,
+      16,
+      16
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      232,
+      8,
+      8
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      464,
+      4,
+      4
+     ]
+    ],
+    [
+     "Sequential",
+     [
+      1024,
+      4,
+      4
+     ]
+    ]
+   ]
+  }
+ },
+ "configs": {
+  "mobilenet_v3_large": {
+   "blocks": [
+    {
+     "in_c": 16,
+     "k": 3,
+     "exp": 16,
+     "out": 16,
+     "se": false,
+     "act": "RE",
+     "s": 1
+    },
+    {
+     "in_c": 16,
+     "k": 3,
+     "exp": 64,
+     "out": 24,
+     "se": false,
+     "act": "RE",
+     "s": 2
+    },
+    {
+     "in_c": 24,
+     "k": 3,
+     "exp": 72,
+     "out": 24,
+     "se": false,
+     "act": "RE",
+     "s": 1
+    },
+    {
+     "in_c": 24,
+     "k": 5,
+     "exp": 72,
+     "out": 40,
+     "se": true,
+     "act": "RE",
+     "s": 2
+    },
+    {
+     "in_c": 40,
+     "k": 5,
+     "exp": 120,
+     "out": 40,
+     "se": true,
+     "act": "RE",
+     "s": 1
+    },
+    {
+     "in_c": 40,
+     "k": 5,
+     "exp": 120,
+     "out": 40,
+     "se": true,
+     "act": "RE",
+     "s": 1
+    },
+    {
+     "in_c": 40,
+     "k": 3,
+     "exp": 240,
+     "out": 80,
+     "se": false,
+     "act": "HS",
+     "s": 2
+    },
+    {
+     "in_c": 80,
+     "k": 3,
+     "exp": 200,
+     "out": 80,
+     "se": false,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 80,
+     "k": 3,
+     "exp": 184,
+     "out": 80,
+     "se": false,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 80,
+     "k": 3,
+     "exp": 184,
+     "out": 80,
+     "se": false,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 80,
+     "k": 3,
+     "exp": 480,
+     "out": 112,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 112,
+     "k": 3,
+     "exp": 672,
+     "out": 112,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 112,
+     "k": 5,
+     "exp": 672,
+     "out": 160,
+     "se": true,
+     "act": "HS",
+     "s": 2
+    },
+    {
+     "in_c": 160,
+     "k": 5,
+     "exp": 960,
+     "out": 160,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 160,
+     "k": 5,
+     "exp": 960,
+     "out": 160,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    }
+   ],
+   "last_channel": 1280
+  },
+  "mobilenet_v3_small": {
+   "blocks": [
+    {
+     "in_c": 16,
+     "k": 3,
+     "exp": 16,
+     "out": 16,
+     "se": true,
+     "act": "RE",
+     "s": 2
+    },
+    {
+     "in_c": 16,
+     "k": 3,
+     "exp": 72,
+     "out": 24,
+     "se": false,
+     "act": "RE",
+     "s": 2
+    },
+    {
+     "in_c": 24,
+     "k": 3,
+     "exp": 88,
+     "out": 24,
+     "se": false,
+     "act": "RE",
+     "s": 1
+    },
+    {
+     "in_c": 24,
+     "k": 5,
+     "exp": 96,
+     "out": 40,
+     "se": true,
+     "act": "HS",
+     "s": 2
+    },
+    {
+     "in_c": 40,
+     "k": 5,
+     "exp": 240,
+     "out": 40,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 40,
+     "k": 5,
+     "exp": 240,
+     "out": 40,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 40,
+     "k": 5,
+     "exp": 120,
+     "out": 48,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 48,
+     "k": 5,
+     "exp": 144,
+     "out": 48,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 48,
+     "k": 5,
+     "exp": 288,
+     "out": 96,
+     "se": true,
+     "act": "HS",
+     "s": 2
+    },
+    {
+     "in_c": 96,
+     "k": 5,
+     "exp": 576,
+     "out": 96,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    },
+    {
+     "in_c": 96,
+     "k": 5,
+     "exp": 576,
+     "out": 96,
+     "se": true,
+     "act": "HS",
+     "s": 1
+    }
+   ],
+   "last_channel": 1024
+  },
+  "efficientnet_b0": {
+   "stages": [
+    {
+     "expand": 1,
+     "k": 3,
+     "s": 1,
+     "in_c": 32,
+     "out": 16,
+     "layers": 1
+    },
+    {
+     "expand": 6,
+     "k": 3,
+     "s": 2,
+     "in_c": 16,
+     "out": 24,
+     "layers": 2
+    },
+    {
+     "expand": 6,
+     "k": 5,
+     "s": 2,
+     "in_c": 24,
+     "out": 40,
+     "layers": 2
+    },
+    {
+     "expand": 6,
+     "k": 3,
+     "s": 2,
+     "in_c": 40,
+     "out": 80,
+     "layers": 3
+    },
+    {
+     "expand": 6,
+     "k": 5,
+     "s": 1,
+     "in_c": 80,
+     "out": 112,
+     "layers": 3
+    },
+    {
+     "expand": 6,
+     "k": 5,
+     "s": 2,
+     "in_c": 112,
+     "out": 192,
+     "layers": 4
+    },
+    {
+     "expand": 6,
+     "k": 3,
+     "s": 1,
+     "in_c": 192,
+     "out": 320,
+     "layers": 1
+    }
+   ],
+   "last_channel": null
+  },
+  "convnext_tiny": {
+   "stages": [
+    [
+     96,
+     3
+    ],
+    [
+     192,
+     3
+    ],
+    [
+     384,
+     9
+    ],
+    [
+     768,
+     3
+    ]
+   ]
+  },
+  "shufflenet_v2_x1_0": {
+   "stage_out_channels": [
+    24,
+    116,
+    232,
+    464,
+    1024
+   ],
+   "repeats": [
+    4,
+    8,
+    4
+   ]
+  }
+ },
+ "resnet18_convs_128": [
+  {
+   "name": "conv1",
+   "k": 7,
+   "s": 2,
+   "p": 3,
+   "cin": 3,
+   "cout": 64,
+   "out": [
+    64,
+    64,
+    64
+   ],
+   "params": 9408,
+   "macs": 38535168
+  },
+  {
+   "name": "layer1.0.conv1",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 64,
+   "cout": 64,
+   "out": [
+    64,
+    32,
+    32
+   ],
+   "params": 36864,
+   "macs": 37748736
+  },
+  {
+   "name": "layer1.0.conv2",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 64,
+   "cout": 64,
+   "out": [
+    64,
+    32,
+    32
+   ],
+   "params": 36864,
+   "macs": 37748736
+  },
+  {
+   "name": "layer1.1.conv1",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 64,
+   "cout": 64,
+   "out": [
+    64,
+    32,
+    32
+   ],
+   "params": 36864,
+   "macs": 37748736
+  },
+  {
+   "name": "layer1.1.conv2",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 64,
+   "cout": 64,
+   "out": [
+    64,
+    32,
+    32
+   ],
+   "params": 36864,
+   "macs": 37748736
+  },
+  {
+   "name": "layer2.0.conv1",
+   "k": 3,
+   "s": 2,
+   "p": 1,
+   "cin": 64,
+   "cout": 128,
+   "out": [
+    128,
+    16,
+    16
+   ],
+   "params": 73728,
+   "macs": 18874368
+  },
+  {
+   "name": "layer2.0.conv2",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 128,
+   "cout": 128,
+   "out": [
+    128,
+    16,
+    16
+   ],
+   "params": 147456,
+   "macs": 37748736
+  },
+  {
+   "name": "layer2.0.downsample.0",
+   "k": 1,
+   "s": 2,
+   "p": 0,
+   "cin": 64,
+   "cout": 128,
+   "out": [
+    128,
+    16,
+    16
+   ],
+   "params": 8192,
+   "macs": 2097152
+  },
+  {
+   "name": "layer2.1.conv1",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 128,
+   "cout": 128,
+   "out": [
+    128,
+    16,
+    16
+   ],
+   "params": 147456,
+   "macs": 37748736
+  },
+  {
+   "name": "layer2.1.conv2",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 128,
+   "cout": 128,
+   "out": [
+    128,
+    16,
+    16
+   ],
+   "params": 147456,
+   "macs": 37748736
+  },
+  {
+   "name": "layer3.0.conv1",
+   "k": 3,
+   "s": 2,
+   "p": 1,
+   "cin": 128,
+   "cout": 256,
+   "out": [
+    256,
+    8,
+    8
+   ],
+   "params": 294912,
+   "macs": 18874368
+  },
+  {
+   "name": "layer3.0.conv2",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 256,
+   "cout": 256,
+   "out": [
+    256,
+    8,
+    8
+   ],
+   "params": 589824,
+   "macs": 37748736
+  },
+  {
+   "name": "layer3.0.downsample.0",
+   "k": 1,
+   "s": 2,
+   "p": 0,
+   "cin": 128,
+   "cout": 256,
+   "out": [
+    256,
+    8,
+    8
+   ],
+   "params": 32768,
+   "macs": 2097152
+  },
+  {
+   "name": "layer3.1.conv1",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 256,
+   "cout": 256,
+   "out": [
+    256,
+    8,
+    8
+   ],
+   "params": 589824,
+   "macs": 37748736
+  },
+  {
+   "name": "layer3.1.conv2",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 256,
+   "cout": 256,
+   "out": [
+    256,
+    8,
+    8
+   ],
+   "params": 589824,
+   "macs": 37748736
+  },
+  {
+   "name": "layer4.0.conv1",
+   "k": 3,
+   "s": 2,
+   "p": 1,
+   "cin": 256,
+   "cout": 512,
+   "out": [
+    512,
+    4,
+    4
+   ],
+   "params": 1179648,
+   "macs": 18874368
+  },
+  {
+   "name": "layer4.0.conv2",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 512,
+   "cout": 512,
+   "out": [
+    512,
+    4,
+    4
+   ],
+   "params": 2359296,
+   "macs": 37748736
+  },
+  {
+   "name": "layer4.0.downsample.0",
+   "k": 1,
+   "s": 2,
+   "p": 0,
+   "cin": 256,
+   "cout": 512,
+   "out": [
+    512,
+    4,
+    4
+   ],
+   "params": 131072,
+   "macs": 2097152
+  },
+  {
+   "name": "layer4.1.conv1",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 512,
+   "cout": 512,
+   "out": [
+    512,
+    4,
+    4
+   ],
+   "params": 2359296,
+   "macs": 37748736
+  },
+  {
+   "name": "layer4.1.conv2",
+   "k": 3,
+   "s": 1,
+   "p": 1,
+   "cin": 512,
+   "cout": 512,
+   "out": [
+    512,
+    4,
+    4
+   ],
+   "params": 2359296,
+   "macs": 37748736
+  }
+ ],
+ "resnet18_bn_params": 9600
+}
