@@ -32,7 +32,40 @@ Newest entries on top. Each entry: date, machine, what was done, decisions (with
 9. `train_model()` (rewritten for readability + line comments at user request): head bias = 33.23; phase 1 = 1 epoch head, AdamW 1e-3; phase 2 = AdamW head 1e-3 / backbone 1e-4, wd 0.01, cosine to 0 over 14 epochs, bs 128, bf16 autocast, early stopping patience 3 on val MAE, best weights kept. Logs `logs/train/<run>.csv` + `_steps.csv`, figure `results/figures/train_<run>.png` (loss per step, log scale, time per epoch). **Smoke test passed** (512 train / 256 val, 2 epochs, both models, ~0.065 Wh each). Demo cells (heads, augmentation, freezing plan) now run once (`already_logged`).
 - **User rule: never start a training run without the user's explicit OK.**
 
-**Next (user decides when):** full training runs of ResNet18 and MobileNetV3-L (need the user's OK), then test evaluation once per final model. Earlier note: the training loop and the fine-tuning plan (open: head-first then unfreeze vs. full fine-tuning; loss L1/Huber; LR, epochs, early stopping, AMP, batch size, augmentation incl. random greyscale).
+10. **First full runs (user OK, lab, cuda:0):**
+   | run | epochs | best val MAE | time | energy | CO2 |
+   |---|---|---|---|---|---|
+   | `resnet18_A_run01` | 10 (early stop) | **5.297** @ 7 | 14.7 s | 1.98 Wh (0.198 Wh/epoch, GPU avg 470 W) | 0.92 g |
+   | `mobilenet_v3_large_A_run01` | 15 (no stop) | **5.264** @ 13 | 31.8 s | 4.06 Wh (0.271 Wh/epoch, 444 W) | 1.89 g |
+   Project total after these: 9.90 Wh, 4.60 g CO2eq. **Test set not touched yet.**
+   Findings: (a) **MACs ≠ energy**: MNV3-L has 8× fewer MACs but 1.4× more energy per epoch (depthwise convs are memory-bound, GPUs favour dense matmuls) → report point. (b) ResNet18 early-stopped at epoch 10 while the cosine lr was still 3.9e-4; MNV3 improved in epochs 10–13 at low lr → patience 3 + cosine may cut ResNet short. (c) Last batch of each epoch has only 3 images (16,131 mod 128) → visible loss spikes at epoch ends and a noisy full-lr step. (d) ~~Train loss at step 0 ≈ 18.8 because random head weights add an offset~~ **WRONG (checked later):** the first batch (seed 655) has mean age 36.9 and L1 18.81 vs the constant 33.23; random weights changed it by 0.01. Zero-init kept anyway (clean start), but it fixed nothing. (e) Head-epoch time saving (33 % vs 66 %) not visible: at ~1 s/epoch, fixed overheads (cuDNN autotune on first epochs, per-step `.item()` sync, augmentation) dominate. (f) My time/energy estimate (1–3 min, 10–25 Wh) was ~5× too high.
+
+11. **Fixed protocol + full fine-tuning (user OK):** exactly 15 epochs, no early stopping (`patience=None`), full batches only (126/epoch), head weights 0. New strategy `"full"` (all layers from epoch 1, same lrs). Section 11 of notebook 02 + comparison figure `results/figures/compare_standard_runs.png`.
+   | run | best val MAE | epoch | time | Wh | Wh/epoch | g CO2 |
+   |---|---|---|---|---|---|---|
+   | resnet18_A_run02 | 4.993 | 12 | 21.2 s | 3.02 | 0.201 | 1.40 |
+   | mobilenet_v3_large_A_run02 | 5.242 | 9 | 29.2 s | 4.05 | 0.270 | 1.88 |
+   | resnet18_full_run01 | **4.761** | 15 | 43.6 s | 5.71 | 0.381 | 2.65 |
+   | mobilenet_v3_large_full_run01 | 5.092 | 14 | 68.5 s | 7.53 | 0.502 | 3.50 |
+   Project total: **30.21 Wh, 14.03 g CO2eq**. Test set still untouched.
+   Findings: fixing stopping helped ResNet18 A (5.297 → 4.993; it improved in epochs 10–12 at low lr), MNV3 A unchanged (5.264 → 5.242). Full FT is better on val (ResNet −0.23 y, MNV3 −0.15 y) for ~1.9× the energy. Measured energy saving of option A (≈ 1.9× per epoch) is **larger** than the MAC estimate (66 % → 1.5×; MNV3 80 % → 1.25×): backward through high-resolution early layers is memory-heavy, which MACs do not capture. ResNet18 beats MNV3-L on both error and energy on this GPU.
+   **Consequence for the own CNN:** if ResNet18-full is the best standard model and its test MAE ≈ val (4.76), the own-CNN limit is ≈ 1.15 × 4.76 ≈ **5.5 years** (much stricter than 9.24).
+
+12. **Test evaluation, once per config (user chose all four; notebook 02 section 12, guarded by `already_logged`).** Baseline eval in cell 12 now also guarded.
+   | model | params | MFLOPs/img | val MAE | **test MAE** | RMSE | R² | train Wh | ms/img (bs 1) | Wh/1000 pred | MB |
+   |---|---|---|---|---|---|---|---|---|---|---|
+   | ResNet18 A | 11,177,025 | 3111.7 | 4.993 | 4.888 | 6.996 | 0.878 | 3.02 | 0.80 | 0.0066 | 44.8 |
+   | MNV3-L A | 4,203,313 | 374.5 | 5.242 | 5.331 | 7.441 | 0.862 | 4.05 | 2.18 | 0.0075 | 17.0 |
+   | **ResNet18 full** | 11,177,025 | 3111.7 | 4.761 | **4.768** | 6.780 | 0.885 | 5.71 | 0.80 | 0.0067 | 44.8 |
+   | MNV3-L full | 4,203,313 | 374.5 | 5.092 | 5.141 | 7.238 | 0.869 | 7.53 | 2.12 | 0.0075 | 17.0 |
+   **MAE_best = 4.768 (ResNet18 full) ⇒ own CNN must reach test MAE ≤ 1.15 × 4.768 = 5.483** (binding; the 0.6 × MAE_mean limit is 9.240). Test ≈ val for all four (|diff| ≤ 0.11).
+   MFLOPs = 2 × MACs. Latency: MNV3 is 2.7× slower at batch 1 (more, smaller layers → launch-bound). Energy/1000 predictions measured on val images repeated ~10 s at batch 512 (CodeCarbon samples every 5 s, a test pass takes < 1.5 s); those 4 benchmarks cost 6.3 Wh together (~17 % of the project so far). `project_kg_co2` in results.csv = all runs whose name contains the architecture (ResNet18 6.5 g, MNV3 8.8 g); shared runs (cache, tests, baseline) are not attributed.
+   Per-group test MAE of ResNet18 full: grows with age (0–2: 1.19 → 80+: 9.26); 30–39 is the only band worse than the mean baseline (5.24 vs 2.51, the baseline predicts ≈ 33 there). By race: White 5.26, Black 5.22, Indian 4.67, Asian 3.54, Others 3.35, but Asian/Others contain many young children → bias analysis must control for age (per band × race), still to do.
+   Project total: **36.71 Wh, 17.05 g CO2eq**.
+
+12.1 Findings figure `results/figures/findings_standard_models.png` (notebook 02 cell 32, plotting only): (a) test MAE vs train CO2 (log) with Pareto front = ResNet18 A (1.40 g, 4.888) → ResNet18 full (2.65 g, 4.768), both MNV3 configs dominated, own-CNN limit line 5.483; (b) MFLOPs vs Wh/epoch; (c) test MAE per age band vs baseline; (d) val vs test MAE.
+
+**Next (user decides):** own CNN design on paper (per-layer shapes, params, receptive field, MACs) with the target **test MAE ≤ 5.48** at the lowest CO2; age-controlled bias analysis; error-vs-CO2 Pareto plot once the own CNN exists.
 
 ## 2026-11-05 · work-pc
 **Done (deck, at the user's request; no training, no CO2 runs):**
