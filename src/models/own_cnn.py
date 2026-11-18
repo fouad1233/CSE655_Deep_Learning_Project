@@ -8,7 +8,7 @@ Design (chosen 2026-11-18, hand calculations in notebook 02 section 15):
     stage2   block 32->64,  stride 2    -> 64 x  25 x  25     RF  47   jump 8
     stage3   block 64->128, stride 2    -> 128 x 13 x 13      RF  95   jump 16
     stage4   block 128->256, stride 2   -> 256 x  7 x  7      RF 191   jump 32
-    head     global average pool -> 256 -> Linear(256, 1)
+    head     global average pool -> 256 -> Linear(256, 1) -> age = mean + std * output (fixed scaling)
 
     block = "basic"      : conv3x3 -> BN -> ReLU -> conv3x3 -> BN, + shortcut, ReLU      (main design)
     block = "bottleneck" : conv1x1 (C/4) -> conv3x3 (C/4) -> conv1x1 (C), + shortcut   (ablation)
@@ -75,6 +75,14 @@ class OwnCNN(nn.Module):
         self.stage4 = ResidualBlock(w3, w4, 2, block)    # 7 x 7
         self.pool = nn.AdaptiveAvgPool2d(1)              # 256 x 7 x 7 -> 256 x 1 x 1 (mean of the 49 positions)
         self.fc = nn.Linear(w4, 1)                       # the regression head: 256 weights + 1 bias
+        # output scaling (fixed, NOT learned; buffers are saved in the checkpoint but get no gradient):
+        #   age = out_mean + out_std * fc(features)
+        # fc predicts the age in standard deviations ("z-score"). train_model sets out_mean / out_std to the
+        # training-set mean (33.23) and std (~19.9). Without it the head weights, which start at 0 and move
+        # by ~lr per Adam step, needed hundreds of steps to spread predictions over +-20 years
+        # (diagnostic in notebook 02 section 15.3.1: prediction std 5-7 vs true 19.9 after 310 steps).
+        self.register_buffer("out_mean", torch.tensor(0.0))
+        self.register_buffer("out_std", torch.tensor(1.0))
         self._init_weights()
 
     def _init_weights(self) -> None:
@@ -94,4 +102,4 @@ class OwnCNN(nn.Module):
         x = self.stem(x)
         x = self.stage4(self.stage3(self.stage2(self.stage1(x))))
         x = torch.flatten(self.pool(x), 1)               # (B, 256, 1, 1) -> (B, 256)
-        return self.fc(x)                                # (B, 1)
+        return self.out_mean + self.out_std * self.fc(x)  # (B, 1), in years
