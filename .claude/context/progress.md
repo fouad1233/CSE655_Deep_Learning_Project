@@ -2,6 +2,15 @@
 
 Newest entries on top. Each entry: date, machine, what was done, decisions (with reasons), next steps.
 
+## 2026-11-18 · lab
+**Done (setup only; no training, no CO2 runs):**
+- Fresh clone; repo-local git identity set (`fouad1233`).
+- Lab: Ubuntu, kernel 7.0, 2× RTX 5090 (sm_120), driver 580.178.04 (CUDA 13.0), Python 3.12.13 (`~/.local/bin/python3.12`).
+- **torch index:** `cu128` stops at torch 2.11, so it has no build for the pinned `torch==2.15.0`. Only `cu132` has 2.15.0 for cp312. Installed with `TORCH_INDEX_URL=https://download.pytorch.org/whl/cu132 bash scripts/setup_env.sh` → `torch 2.15.0+cu132`, `torchvision 0.29.2+cu132`. The 13.2 runtime works on the 13.0 driver (CUDA minor-version compatibility). Verified with `check_env.py` (arch list includes sm_120, both GPUs seen, conv smoke test OK) and a real 4096² matmul on each GPU. Full resolution in `env/freeze-lab.txt`.
+- UTKFace downloaded (SHA-256 OK, 23,708 files); clean CSVs regenerated → `utkface_clean.csv` with **23,053 rows** (matches work-pc). Re-running the cells only changed notebook metadata (timestamps, image path) and re-rendered `clean_step1_removed.png`, not the results.
+
+**Still open:** the same model-design decisions as in the 2026-11-05 entry (two standard models, input size 224 / 200 / 128, fine-tuning plan).
+
 ## 2026-11-05 · work-pc
 **Done (deck, at the user's request; no training, no CO2 runs):**
 - After a slide comment, slide 3 now defines every symbol (H, W, k, s, p, C_in, C_out, ⌊ ⌋, params, MAC) with a step-by-step ResNet18 conv1 example, and 4 glossary slides explain 40 terms in plain words.
