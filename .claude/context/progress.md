@@ -9,7 +9,25 @@ Newest entries on top. Each entry: date, machine, what was done, decisions (with
 - **torch index:** `cu128` stops at torch 2.11, so it has no build for the pinned `torch==2.15.0`. Only `cu132` has 2.15.0 for cp312. Installed with `TORCH_INDEX_URL=https://download.pytorch.org/whl/cu132 bash scripts/setup_env.sh` → `torch 2.15.0+cu132`, `torchvision 0.29.2+cu132`. The 13.2 runtime works on the 13.0 driver (CUDA minor-version compatibility). Verified with `check_env.py` (arch list includes sm_120, both GPUs seen, conv smoke test OK) and a real 4096² matmul on each GPU. Full resolution in `env/freeze-lab.txt`.
 - UTKFace downloaded (SHA-256 OK, 23,708 files); clean CSVs regenerated → `utkface_clean.csv` with **23,053 rows** (matches work-pc). Re-running the cells only changed notebook metadata (timestamps, image path) and re-rendered `clean_step1_removed.png`, not the results.
 
-**Still open:** the same model-design decisions as in the 2026-11-05 entry (two standard models, input size 224 / 200 / 128, fine-tuning plan).
+**Decided (user, 2026-11-18):**
+- **Split 70/15/15, stratified by age band × race**, seed 655.
+- **Input size 200 px (native UTKFace)** for all models; no resizing. ResNet18 ≈ 1.56 G MACs/img at 200 px.
+- **Standard models: ResNet18 + MobileNetV3-Large, both fine-tuned from ImageNet.**
+
+**Done:** `src/data/split.py` → `splits/utkface_split_seed655.csv` (committed; MD5 573aa142…, identical on re-run). Hand-rolled per-stratum split (shuffle, round(0.15 n) test, round(0.15 n) val, rest train), because 2 strata are tiny (70–79 Others n=2, 80+ Others n=4) and sklearn's stratify fails on them. Result: train 16,131 / val 3,461 / test 3,461; age mean 33.23 / 33.26 / 33.33, race shares within 0.1 pp.
+
+**Notebook `src/02_pipeline.ipynb`** (built cell by cell with the user; each step explained and confirmed before the next):
+1. Setup: `REPO`, `SEED=655`, `MACHINE="lab"`, real matmul GPU check.
+2. Load + check the split.
+3. `track(run_name, kind, gpu_ids)`: CodeCarbon `OfflineEmissionsTracker(country_iso_code="TUR")`, **`tracking_mode="process"`, `force_mode_cpu_load=True`**. Reason: the lab machine is **shared** (another user's Ollama on **GPU 1** + PX4 sims ≈ 120 W CPU); RAPL would charge their CPU load to our runs. GPU measured by NVML on `gpu_ids=[0]` only; `track` warns/logs `other_gpu_procs` if anything else is on our GPU. Logs: `logs/emissions/emissions.csv` (CodeCarbon) + `logs/runs.csv` (our summary; read+concat+rewrite, never append). Failed runs logged with `status=failed`. Turkey grid: 465 g CO2eq/kWh. **Always train on cuda:0.**
+4. Cache: `data/cache/utkface_200_uint8.npy` (23,053 × 3 × 200 × 200 uint8, 2.77 GB, rows = split CSV order), built in 6.2 s / 0.146 Wh; 8 random rows equal a fresh JPEG decode.
+5. `build_model("resnet18" | "mobilenet_v3_large")`: ImageNet **V1 weights for both** (user decided MNV3 V1), last Linear → 1 output. Params 11,177,025 / 4,203,313 (hand-checked). `to_input`: uint8 → /255 → ImageNet mean/std on GPU. ResNet18 at 200 px: 1.56 G MACs.
+- User ran `sudo chmod o+r` on the RAPL `energy_uj` files; no longer needed (process mode). Resets on reboot.
+
+6. `evaluate(y, ŷ, meta)` → MAE, RMSE, R² + per-group MAE (gender, race, age band); `save_result(row)` → `results/results.csv` (one row per model, replaced on re-run); per-group CSVs in `results/per_group/`.
+   **Baseline (train stats, evaluated on val + test):** mean = 33.228 → **test MAE 15.400**, RMSE 20.007, R² −0.000; median = 29 → test MAE 15.072, RMSE 20.471. **MAE_mean = 15.400 ⇒ own CNN target ≤ 9.240 years** (and ≤ 1.15 × MAE_best). Mean-baseline per-group test MAE ranges from 2.51 (30–39) to 54.36 (80+); by race Black 10.60 (youngest group) … White 17.89. These differences come from the age distribution, not the images, so bias analysis must compare models **per age band** or against this baseline.
+
+**Next (user decides when):** the training loop and the fine-tuning plan (open: head-first then unfreeze vs. full fine-tuning; loss L1/Huber; LR, epochs, early stopping, AMP, batch size, augmentation incl. random greyscale).
 
 ## 2026-11-05 · work-pc
 **Done (deck, at the user's request; no training, no CO2 runs):**

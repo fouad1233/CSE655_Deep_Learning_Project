@@ -1,0 +1,3 @@
+model,machine,params,mflops_per_img,test_mae,test_rmse,test_r2,train_kwh,train_kg_co2,project_kg_co2,ms_per_img
+mean baseline,lab,0,0,15.4,20.007,-0.0,0,0,,0
+median baseline,lab,0,0,15.072,20.471,-0.047,0,0,,0
