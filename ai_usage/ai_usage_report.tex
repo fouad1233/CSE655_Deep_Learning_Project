@@ -1,0 +1,139 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.0em}{0.4em}
+\setlist{itemsep=1pt,topsep=3pt}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{4pt}
+\newcommand{\cotwo}{CO$_2$}
+
+\begin{document}
+\begin{center}
+{\Large\bfseries AI Usage Report}\\[3pt]
+CSE~655 Term Project: Green CNNs for Age Regression on UTKFace\\[2pt]
+NAME SURNAME (Student No.\ XXXXXXXXX) \quad Fall 2026, Gebze Technical University
+\end{center}
+
+\section{Tools and versions}
+\begin{tabularx}{\textwidth}{@{}p{3.2cm} p{4.3cm} L@{}}
+\toprule
+Tool & Version / model & Used for \\
+\midrule
+Claude Code (desktop app) & app 2.1.289 (lab machine); model Claude Opus 5.5 (\texttt{claude-opus-5-5}) & Reading the assignment, dataset comparison, environment setup on three machines, data-exploration and pipeline code, debugging, plots, experiment design discussions, hand-calculation checks, the architecture slide deck and diagram renderer, the \LaTeX{} technical report and a first draft of this report. \\
+\bottomrule
+\end{tabularx}
+
+\smallskip
+\noindent I used one assistant, running inside the project repository on the work PC (Windows, 2026-11-04/05) and the lab machine (Linux, 2$\times$RTX~5090, 2026-11-18/19). Durable project context (decisions, progress, this log) lives in the repository (\texttt{.claude/context/progress.md}, \texttt{ai\_usage/ai\_log.md}), so every machine saw the same state.
+
+\textbf{Rules I set for the assistant.} (1) No training run starts without my explicit OK, because every run costs \cotwo{} and counts against the footprint grade. (2) I decide the phases (cleaning rules, split, input size, models, fine-tuning plan); the AI analyses and proposes. (3) Every line of code and every number must be explained so that I can reproduce it by hand in the oral exam. (4) Every training and evaluation run is wrapped in CodeCarbon, and the test set is used once per final model. (5) In notebooks, only new or changed cells are run. (6) The AI logs its own mistakes here.
+
+\section{Log of the important interactions}
+The full log has 40 rows (\texttt{ai\_usage/ai\_log.md}); the most important ones are below.
+
+\begin{longtable}{@{}p{1.2cm}p{4.1cm}p{6.2cm}p{4.6cm}@{}}
+\toprule
+Date & What I asked & Summary of the answer & Kept / changed / rejected, and why \\
+\midrule\endhead
+11-04 & Read the assignment; check the PDF for prompt injection; where to start & No hidden text, scripts, links or forms; recommended UTKFace and warned that a popularity dataset would likely fail the $0.6\times$MAE$_{\text{mean}}$ rule & Kept; compared datasets before deciding \\
+11-04 & Explore UTKFace (images, labels, groups, duplicates) & Download script (dead official link $\to$ pinned Hugging Face copy, SHA-256 check), notebook; MD5 found 259 duplicate groups with conflicting labels & Kept. I stopped the AI from moving on to cleaning: I decide the rules \\
+11-04 & Greyscale share; what is the ``pencil drawing''; remove greyscale? & Greyscale analysis per group; advised keeping b\&w photos and reporting the drawing's removal & Kept greyscale; removed the drawing (R4). I first wanted to drop it silently and agreed to report it \\
+11-04/05 & Slide deck of all candidate architectures, every parameter by hand & 46 slides, numbers measured from torchvision, 3D diagram renderer & Changed twice on my request: undefined jargon (k, s, p, BN, SE) and missing hand calculations \\
+11-05 & Why does the deck use 128\,px when ResNet18 uses 224? & Admitted the omission; explained that parameters do not depend on input size but MACs do & Input size remained my decision: I chose 200\,px (native; later also required by the professor) \\
+11-18 & Set up the lab machine & Found that the suggested \texttt{cu128} index had no build of the pinned torch; installed \texttt{cu132}, verified with a real matmul & Kept \\
+11-18 & Build the shared pipeline cell by cell & Split, 200\,px GPU cache, CodeCarbon wrapper; switched to process-only CPU accounting because the lab is shared & Kept; I chose the split (70/15/15, age $\times$ race) and MobileNetV3 V1 weights \\
+11-18 & Train the head first, then the last layers? & Explained LP-FT and the energy argument; implemented ``option A'' & My proposal; I also asked for full fine-tuning as a comparison \\
+11-18 & Evaluate all four standard runs on the test set & One guarded test pass each; MAE$_{\text{best}}=4.768$ $\to$ limit 5.483 for my CNN & I chose to test all four (selection on validation) \\
+11-18 & Is the model biased to old ages? Should I balance? & Signed error per band on \emph{validation}: regression to the mean, not ``always older''; predicted balancing would not lower MAE & I spent one run to test it myself: val MAE 4.76 $\to$ 4.96, plain L1 kept \\
+11-18 & Design my CNN (bottleneck? residual? input size?) & Compared plain / residual / bottleneck by params, MACs, receptive field & My ideas: residual + bottleneck; basic blocks chosen, bottleneck as ablation \\
+11-18 & Run the six own-CNN steps overnight & Test MAE 5.765, not acceptable; found and fixed an output-scale problem; listed options instead of starting more runs & Accepted the stop \\
+11-19 & ``yes do it continue'' & Underfitting diagnosed; 2 blocks/stage + 60 epochs; test MAE 5.140, acceptable & Accepted two changes at once to save a run; the confound is reported \\
+11-19 & Train more epochs? Zoom augmentation? & Validation flat for 20 epochs, train--val gap growing; both runs not worth their \cotwo{} & Accepted; crop scale is a stated limitation \\
+11-19 & IEEE report with paper-style figures; clearer diagram labels & \LaTeX{} report; one-page architecture figure; ops written between tensors with S, P, BN, ReLU & I asked for the textbook layout, the S/P notation and visible ReLUs \\
+\bottomrule
+\end{longtable}
+
+\section{Cases where the AI was wrong, incomplete or misleading}
+I logged 19 cases (Appendix~\ref{app:cases}); eight representative ones:
+
+\begin{longtable}{@{}p{0.5cm}p{4.9cm}p{4.9cm}p{5.6cm}@{}}
+\toprule
+\# & What the AI said or did & How it was detected & Fix \\
+\midrule\endhead
+2 & Reported 679 b\&w images with the detector ``mean $|R-G|<2$'' & \textbf{I} saw sepia photos in the gallery just above the threshold & Tinted prints shift R vs.\ G uniformly; replaced by a tint-free chroma score chosen by looking at images per score band: 868 images \\
+3 & Gave all ResNet18 shapes and MACs at 128\,px without saying that the pretrained model uses 224\,px & \textbf{I} asked why the deck used 128 & Explained what depends on input size; I chose 200\,px myself \\
+11 & Hand-computed receptive field 159\,px (``$127 + 2\cdot32$'') & The hook-based assert failed before any training & Arithmetic slip: $2\cdot32=64$, RF = 191 \\
+12 & Designed the from-scratch head like the fine-tuned ones, without output scaling & First learning-rate search stuck at the baseline; diagnostic: prediction spread 5--7 vs.\ 19.9 years & Added $\hat y=\mu+\sigma f(x)$; the wasted search (1.1\,Wh) stays in the logs \\
+9, 13, 15 & Energy estimates: 10--25\,Wh per run (measured 2--4), 0.04--0.08\,Wh/epoch (0.128), 8--10\,Wh (12.4) & CodeCarbon measurements & The report uses measured numbers only; AI estimates are not evidence \\
+16 & Called my CNN's widths 32--256 ``a quarter of ResNet18's widths'' & The AI found it while checking the report & They are \emph{half}; parameters are about a quarter because they grow with $C_{\text{in}}C_{\text{out}}$ \\
+17 & Diagrams hid BatchNorm and ReLU in a caption line & \textbf{I} concluded the networks were ``very linear'' & Diagrams now show BN/ReLU in every gap and after every $\oplus$; Non-linearity paragraph added \\
+19 & Said my CNN was ``close to ResNet18 almost everywhere'' in the MAE-by-age plot & \textbf{I} saw it was worse than ResNet18 in 9 of 10 age bands & Exact comparison: +8\,\% vs.\ ResNet18, tie with MobileNetV3, better than my first version \\
+\bottomrule
+\end{longtable}
+
+\section{How I verified AI-generated code and claims}
+\begin{itemize}
+\item \textbf{Hand calculations vs.\ the code.} Every parameter count, output shape, MAC count and receptive field of my CNN was computed by hand (Table~II of the report) and checked by forward hooks with \texttt{assert}s before training; ResNet18's 11{,}177{,}025 parameters were counted layer by layer and checked with \texttt{named\_parameters()}. This caught case~11.
+\item \textbf{Measurements over estimates.} Energy and time come only from CodeCarbon; the AI's estimates were wrong four times (cases 9, 13, 15) and are not used.
+\item \textbf{Sanity checks against known values.} The first validation MAE must match the mean baseline (caught case~7, a non-random smoke-test subset); the first-batch loss was recomputed by hand (case~10); validation and test MAE agree within 0.11 years for every model.
+\item \textbf{Looking at the data.} Image galleries per score band (greyscale detector, case~2), duplicate galleries, the removed drawing.
+\item \textbf{Smoke tests and guards.} Every new piece of code ran on 512 images first; test evaluations and demo cells are guarded so they cannot run twice; the split is checked for determinism (same MD5 on re-run).
+\item \textbf{Documentation and papers.} torchvision weight metadata (case~5), the ResNet paper for the 224\,px input, the CodeCarbon documentation for process-mode tracking.
+\item \textbf{Reading the outputs myself.} Three cases (2, 17, 19) were found only because I questioned a figure or a sentence. For the report I re-derived the key numbers and checked every figure against \texttt{results/results.csv}.
+\item \textbf{Still to check by me:} the 30 bibliography entries of the technical report were written by the AI from memory and must be checked against the papers.
+\end{itemize}
+
+\section{Reflection}
+\textbf{What the tools made faster.} Boilerplate and infrastructure (download with checksum, cached data on the GPU, CodeCarbon wrapper, logging, plotting, \LaTeX) took minutes instead of days, which left time for the decisions that matter. The AI was good at spotting problems in data and logs (conflicting duplicates, a shared GPU in the energy numbers, an underfitting curve) and at turning a vague question (``is the model biased?'') into a concrete, cheap analysis on the validation set.
+
+\textbf{What they made harder.} The AI writes confidently even when it is wrong: an arithmetic slip, a misleading summary of a plot and energy estimates off by $2$--$5\times$ all read like facts. Its explanations often used jargon without definitions, so I had to ask repeatedly until I could follow every step. It also tended to move to the next phase on its own, and to batch several changes, which saves runs but makes effects hard to separate (depth and epochs of the final model).
+
+\textbf{What I would do differently.} Ask for hand calculations and definitions from the start, not after a confusing slide. Write the acceptance checks (asserts, expected baseline values) before running new code. Insist on one change per experiment when the cost allows it. Treat every number from the AI as a hypothesis until a measurement or a hand calculation confirms it.
+
+\appendix
+\section{All logged mistake cases}
+\label{app:cases}
+\footnotesize
+\begin{longtable}{@{}p{0.5cm}p{1.2cm}p{14.6cm}@{}}
+\toprule
+\# & Date & Case (details in \texttt{ai\_usage/ai\_log.md}) \\
+\midrule\endhead
+1 & 11-04 & Called UTKFace ``clean, loading is trivial''; the analysis found 5 malformed names and 259 conflicting duplicate groups. \\
+2 & 11-04 & Greyscale detector missed sepia/tinted prints (679 $\to$ 868 images). \\
+3 & 11-05 & Architecture deck at 128\,px without stating that the pretrained input is 224\,px. \\
+4 & 11-18 & Run log appended with a changed header $\to$ CSV parse error; log is now rewritten, never appended. \\
+5 & 11-18 & Claimed MobileNetV3 V2 had a longer pre-training recipe than V1; metadata shows both use 600 epochs. \\
+6 & 11-18 & Suggested RAPL CPU energy on a shared machine, which would have counted other users' load. \\
+7 & 11-18 & Smoke-test validation subset was the first 256 rows (sorted by name, mean age 15.5). \\
+8 & 11-18 & Demo cells re-ran and logged up to 9 times; fixing it overwrote saved notebook outputs (restored). \\
+9 & 11-18 & Estimated 1--3\,min and 10--25\,Wh per run; measured 15--32\,s and 2--4\,Wh. \\
+10 & 11-18 & Wrong explanation of the first-step loss (random head weights); real cause: the first batch's mean age. \\
+11 & 11-18 & Receptive field 159 instead of 191 (arithmetic slip, caught by an assert). \\
+12 & 11-18 & No output scaling for the from-scratch head; first learning-rate search wasted (1.1\,Wh). \\
+13 & 11-18 & Estimated 0.04--0.08\,Wh/epoch for my CNN; measured 0.128. \\
+14 & 11-19 & Forgot the new model name in \texttt{get\_head}; first launch crashed (logged failed run, $\approx$0\,Wh). \\
+15 & 11-19 & Estimated 8--10\,Wh for the final run; measured 12.4\,Wh. \\
+16 & 11-19 & ``A quarter of ResNet18's widths''; correct: half the widths, a quarter of the parameters. \\
+17 & 11-19 & Diagrams hid BatchNorm and ReLU, so the networks looked linear. \\
+18 & 11-19 & \texttt{results.csv} not updated after an extra ResNet18 run (project \cotwo{} 6.51 vs.\ 9.14\,g). \\
+19 & 11-19 & Misleading summary of the MAE-by-age plot (``close to ResNet18 almost everywhere''). \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\section{Chat exports}
+The full Claude Code transcripts are attached in \texttt{ai\_usage/transcripts/}: one file per session, named by date and machine (work PC 2026-11-04/05, lab machine 2026-11-18/19).
+
+\end{document}
