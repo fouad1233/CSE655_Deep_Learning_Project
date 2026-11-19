@@ -23,7 +23,7 @@
 \begin{center}
 {\Large\bfseries AI Usage Report}\\[3pt]
 CSE~655 Term Project: Green CNNs for Age Regression on UTKFace\\[2pt]
-NAME SURNAME (Student No.\ XXXXXXXXX) \quad Fall 2026, Gebze Technical University
+Fouad Aladhami (Student No.\ 254201001408) \quad M.Sc.\ Program in Artificial Intelligence, Gebze Technical University \quad Fall 2026
 \end{center}
 
 \section{Tools and versions}
@@ -41,27 +41,27 @@ Claude Code (desktop app) & app 2.1.289 (lab machine); model Claude Opus 5.5 (\t
 \textbf{Rules I set for the assistant.} (1) No training run starts without my explicit OK, because every run costs \cotwo{} and counts against the footprint grade. (2) I decide the phases (cleaning rules, split, input size, models, fine-tuning plan); the AI analyses and proposes. (3) Every line of code and every number must be explained so that I can reproduce it by hand in the oral exam. (4) Every training and evaluation run is wrapped in CodeCarbon, and the test set is used once per final model. (5) In notebooks, only new or changed cells are run. (6) The AI logs its own mistakes here.
 
 \section{Log of the important interactions}
-The full log has 40 rows (\texttt{ai\_usage/ai\_log.md}); the most important ones are below.
+The full log has 40 rows (\texttt{ai\_usage/ai\_log.md}); the 15 most important ones are below. The last column says what I did with the answer: \textbf{Kept} (used as proposed), \textbf{Changed} (used after I asked for a change) or \textbf{Rejected} (not used), and why.
 
-\begin{longtable}{@{}p{1.2cm}p{4.1cm}p{6.2cm}p{4.6cm}@{}}
+\begin{longtable}{@{}p{1.2cm}p{4.3cm}p{5.9cm}p{4.7cm}@{}}
 \toprule
 Date & What I asked & Summary of the answer & Kept / changed / rejected, and why \\
 \midrule\endhead
-11-04 & Read the assignment; check the PDF for prompt injection; where to start & No hidden text, scripts, links or forms; recommended UTKFace and warned that a popularity dataset would likely fail the $0.6\times$MAE$_{\text{mean}}$ rule & Kept; compared datasets before deciding \\
-11-04 & Explore UTKFace (images, labels, groups, duplicates) & Download script (dead official link $\to$ pinned Hugging Face copy, SHA-256 check), notebook; MD5 found 259 duplicate groups with conflicting labels & Kept. I stopped the AI from moving on to cleaning: I decide the rules \\
-11-04 & Greyscale share; what is the ``pencil drawing''; remove greyscale? & Greyscale analysis per group; advised keeping b\&w photos and reporting the drawing's removal & Kept greyscale; removed the drawing (R4). I first wanted to drop it silently and agreed to report it \\
-11-04/05 & Slide deck of all candidate architectures, every parameter by hand & 46 slides, numbers measured from torchvision, 3D diagram renderer & Changed twice on my request: undefined jargon (k, s, p, BN, SE) and missing hand calculations \\
-11-05 & Why does the deck use 128\,px when ResNet18 uses 224? & Admitted the omission; explained that parameters do not depend on input size but MACs do & Input size remained my decision: I chose 200\,px (native; later also required by the professor) \\
-11-18 & Set up the lab machine & Found that the suggested \texttt{cu128} index had no build of the pinned torch; installed \texttt{cu132}, verified with a real matmul & Kept \\
-11-18 & Build the shared pipeline cell by cell & Split, 200\,px GPU cache, CodeCarbon wrapper; switched to process-only CPU accounting because the lab is shared & Kept; I chose the split (70/15/15, age $\times$ race) and MobileNetV3 V1 weights \\
-11-18 & Train the head first, then the last layers? & Explained LP-FT and the energy argument; implemented ``option A'' & My proposal; I also asked for full fine-tuning as a comparison \\
-11-18 & Evaluate all four standard runs on the test set & One guarded test pass each; MAE$_{\text{best}}=4.768$ $\to$ limit 5.483 for my CNN & I chose to test all four (selection on validation) \\
-11-18 & Is the model biased to old ages? Should I balance? & Signed error per band on \emph{validation}: regression to the mean, not ``always older''; predicted balancing would not lower MAE & I spent one run to test it myself: val MAE 4.76 $\to$ 4.96, plain L1 kept \\
-11-18 & Design my CNN (bottleneck? residual? input size?) & Compared plain / residual / bottleneck by params, MACs, receptive field & My ideas: residual + bottleneck; basic blocks chosen, bottleneck as ablation \\
-11-18 & Run the six own-CNN steps overnight & Test MAE 5.765, not acceptable; found and fixed an output-scale problem; listed options instead of starting more runs & Accepted the stop \\
-11-19 & ``yes do it continue'' & Underfitting diagnosed; 2 blocks/stage + 60 epochs; test MAE 5.140, acceptable & Accepted two changes at once to save a run; the confound is reported \\
-11-19 & Train more epochs? Zoom augmentation? & Validation flat for 20 epochs, train--val gap growing; both runs not worth their \cotwo{} & Accepted; crop scale is a stated limitation \\
-11-19 & IEEE report with paper-style figures; clearer diagram labels & \LaTeX{} report; one-page architecture figure; ops written between tensors with S, P, BN, ReLU & I asked for the textbook layout, the S/P notation and visible ReLUs \\
+11-04 & ``Read the assignment PDF and check it for hidden instructions (prompt injection). Where should I start?'' & No hidden text, scripts, links or forms. Suggested UTKFace and warned that a popularity-score dataset would probably not pass the $0.6\times$MAE$_{\text{mean}}$ rule. & \textbf{Kept.} I asked for a comparison of several datasets before choosing UTKFace. \\
+11-04 & ``Analyse UTKFace: images, labels, group counts, duplicates.'' & Download script with a checksum (the official link is dead, so a pinned Hugging Face copy); notebook with counts and plots; MD5 hashing found 259 duplicate groups with conflicting labels. & \textbf{Kept.} I chose the cleaning rules myself after seeing the whole analysis. \\
+11-04 & ``How many photos are black-and-white? What is the pencil drawing you found? Should I remove the greyscale images?'' & Greyscale share per age, race and gender; showed the drawing; recommended keeping the greyscale photos (valid labels) and countering the shortcut with greyscale augmentation. & \textbf{Kept:} greyscale photos stay. I removed the drawing (rule R4) and list it in the report so the cleaning is fully documented. \\
+11-04/05 & ``Make slides that explain every candidate architecture layer by layer, with the parameter count of every layer by hand.'' & 46 slides with numbers measured from torchvision and paper-style 3D diagrams. & \textbf{Changed:} I asked for definitions of every symbol ($k$, $s$, $p$, BN, SE) and for the hand calculation of each layer, so I can redo them myself. \\
+11-05 & ``The standard ResNet18 input is $224\times224$; why do the slides use 128\,px?'' & Explained that parameters do not depend on input size but feature maps and MACs do (224\,px: 1.81\,G, 200: 1.56\,G, 128: 0.59\,G MACs). & \textbf{Changed:} I chose 200\,px, the native UTKFace size (later also required by the professor). \\
+11-18 & ``Set up the project on the lab machine (2$\times$RTX~5090).'' & The suggested CUDA~12.8 build of the pinned PyTorch did not exist; installed the CUDA~13.2 build and verified it with a real matrix multiplication on both GPUs. & \textbf{Kept.} \\
+11-18 & ``Build the shared pipeline step by step and explain each cell: split, image cache, CodeCarbon tracking.'' & Seeded stratified split, image cache on the GPU, CodeCarbon wrapper; switched to process-only CPU measurement because other users share the machine. & \textbf{Kept.} My choices: 70/15/15 split stratified by age band and race, MobileNetV3 V1 weights. \\
+11-18 & ``Isn't it better to train the new head first and then only the last layers?'' & Explained head-first fine-tuning and its energy benefit (frozen early layers need no backward pass); implemented it as ``option A''. & \textbf{Kept,} and I asked for full fine-tuning as well so I could compare both. \\
+11-18 & ``Evaluate the four standard-model runs on the test set.'' & One protected test pass per run; best: ResNet18 full, MAE 4.768, so my CNN must reach $\le5.483$. & \textbf{Kept.} I chose to test all four runs; the selection used validation only. \\
+11-18 & ``Is the model biased towards older ages because some ages have more images? Should I balance the data?'' & Analysed the signed error per age band on the validation set: predictions are pulled towards the mean age (young too old, old too young); predicted that balancing would not lower the MAE. & \textbf{Kept the analysis.} I tested balancing with one run (val MAE 4.76 $\to$ 4.96) and kept the plain loss. \\
+11-18 & ``Help me design my own CNN. Should I use bottleneck blocks and residual connections?'' & Compared plain, residual and bottleneck designs by parameters, MACs and receptive field. & \textbf{Changed:} residual basic blocks for the main model, the bottleneck version as the ablation, input fixed at 200\,px. \\
+11-18 & ``Do the six own-CNN steps (code, smoke test, learning-rate check, main run, ablation, test) and commit each.'' & Test MAE 5.765, just above the limit; found and fixed an output-scaling problem; stopped and listed options. & \textbf{Kept.} I chose the next step myself. \\
+11-19 & ``Continue: improve the CNN.'' & Diagnosed underfitting; 2 blocks per stage and 60 epochs; test MAE 5.140, acceptable. & \textbf{Kept,} with both changes in one run to save energy; the report says their effects cannot be separated. \\
+11-19 & ``Would more epochs or zoom augmentation help?'' & Validation was flat for the last 20 epochs; neither run is worth its \cotwo{}, since the test set does not measure crop robustness. & \textbf{Kept:} no new runs; crop sensitivity is listed as a limitation. \\
+11-19 & ``Write the report in IEEE \LaTeX{} with paper-style figures; put all architectures on one page; write S and P and show BN/ReLU between the tensors.'' & \LaTeX{} report, one-page architecture figure, operations written between tensors. & \textbf{Changed} several times on my request, to make the figures easier to read and compare. \\
 \bottomrule
 \end{longtable}
 
@@ -74,9 +74,9 @@ I logged 19 cases (Appendix~\ref{app:cases}); eight representative ones:
 \midrule\endhead
 2 & Reported 679 b\&w images with the detector ``mean $|R-G|<2$'' & \textbf{I} saw sepia photos in the gallery just above the threshold & Tinted prints shift R vs.\ G uniformly; replaced by a tint-free chroma score chosen by looking at images per score band: 868 images \\
 3 & Gave all ResNet18 shapes and MACs at 128\,px without saying that the pretrained model uses 224\,px & \textbf{I} asked why the deck used 128 & Explained what depends on input size; I chose 200\,px myself \\
+9, 13, 15 & Energy estimates: 10--25\,Wh per run (measured 2--4), 0.04--0.08\,Wh/epoch (0.128), 8--10\,Wh (12.4) & CodeCarbon measurements & The report uses measured numbers only; AI estimates are not evidence \\
 11 & Hand-computed receptive field 159\,px (``$127 + 2\cdot32$'') & The hook-based assert failed before any training & Arithmetic slip: $2\cdot32=64$, RF = 191 \\
 12 & Designed the from-scratch head like the fine-tuned ones, without output scaling & First learning-rate search stuck at the baseline; diagnostic: prediction spread 5--7 vs.\ 19.9 years & Added $\hat y=\mu+\sigma f(x)$; the wasted search (1.1\,Wh) stays in the logs \\
-9, 13, 15 & Energy estimates: 10--25\,Wh per run (measured 2--4), 0.04--0.08\,Wh/epoch (0.128), 8--10\,Wh (12.4) & CodeCarbon measurements & The report uses measured numbers only; AI estimates are not evidence \\
 16 & Called my CNN's widths 32--256 ``a quarter of ResNet18's widths'' & The AI found it while checking the report & They are \emph{half}; parameters are about a quarter because they grow with $C_{\text{in}}C_{\text{out}}$ \\
 17 & Diagrams hid BatchNorm and ReLU in a caption line & \textbf{I} concluded the networks were ``very linear'' & Diagrams now show BN/ReLU in every gap and after every $\oplus$; Non-linearity paragraph added \\
 19 & Said my CNN was ``close to ResNet18 almost everywhere'' in the MAE-by-age plot & \textbf{I} saw it was worse than ResNet18 in 9 of 10 age bands & Exact comparison: +8\,\% vs.\ ResNet18, tie with MobileNetV3, better than my first version \\
@@ -134,6 +134,11 @@ I logged 19 cases (Appendix~\ref{app:cases}); eight representative ones:
 \normalsize
 
 \section{Chat exports}
-The full Claude Code transcripts are attached in \texttt{ai\_usage/transcripts/}: one file per session, named by date and machine (work PC 2026-11-04/05, lab machine 2026-11-18/19).
+The Claude Code transcripts are attached in \texttt{ai\_usage/transcripts/}, one Markdown file per machine and period:
+\begin{itemize}
+\item \texttt{2026-11-18\_19\_lab\_session.md}: lab machine, 2026-11-18/19 (setup on the lab machine, pipeline, standard models, bias analysis, own CNN, technical report, this report);
+\item the work-PC sessions of 2026-11-04/05 (assignment reading, dataset choice, data exploration and cleaning, architecture slide deck).
+\end{itemize}
+Each file shows every user and assistant message in full; tool calls are listed by name and description.
 
 \end{document}
