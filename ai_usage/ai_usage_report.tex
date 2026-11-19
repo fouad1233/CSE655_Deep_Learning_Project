@@ -87,7 +87,7 @@ I logged 19 cases (Appendix~\ref{app:cases}); eight representative ones:
 \section{How I verified AI-generated code and claims}
 \begin{itemize}
 \item \textbf{Hand calculations vs.\ the code.} Every parameter count, output shape, MAC count and receptive field of my CNN was computed by hand (Table~II of the report) and checked by forward hooks with \texttt{assert}s before training; ResNet18's 11{,}177{,}025 parameters were counted layer by layer and checked with \texttt{named\_parameters()}. This caught case~11.
-\item \textbf{Measurements over estimates.} Energy and time come only from CodeCarbon; the AI's estimates were wrong four times (cases 9, 13, 15) and are not used.
+\item \textbf{Measurements over estimates.} Energy and time come only from CodeCarbon; the AI's estimates were wrong three times (cases 9, 13, 15) and are not used.
 \item \textbf{Sanity checks against known values.} The first validation MAE must match the mean baseline (caught case~7, a non-random smoke-test subset); the first-batch loss was recomputed by hand (case~10); validation and test MAE agree within 0.11 years for every model.
 \item \textbf{Looking at the data.} Image galleries per score band (greyscale detector, case~2), duplicate galleries, the removed drawing.
 \item \textbf{Smoke tests and guards.} Every new piece of code ran on 512 images first; test evaluations and demo cells are guarded so they cannot run twice; the split is checked for determinism (same MD5 on re-run).

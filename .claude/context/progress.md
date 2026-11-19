@@ -2,6 +2,11 @@
 
 Newest entries on top. Each entry: date, machine, what was done, decisions (with reasons), next steps.
 
+## 2026-11-19 (night) · lab · independent grading and fixes
+- Grader 1 (Opus 5.5 agent, medium): 82/100 → fixed README (full reproduction map), weights in `weights/final/`, `scripts/update_results_footprint.py` (results.csv project kWh/kg + train_s), `scripts/plot_error_vs_co2.py` (Fig. 6, final run vs project), figure refs, test-set note, refs verified (3 page ranges fixed), `scripts/export_chat.py`. Commit bbf8a3a.
+- Grader 2 (fresh agent): 88/100 → text fixes: cache saving estimate (~30 Wh), bf16 not measured, techniques not tried, benchmark cost 10.7 Wh, corrected final-run estimate 10.4–10.9 Wh, LR at grid edge, 200 px justification, untuned standard models (limitation 8), break-even units (1.7 M final run / 2.4 M project), AI report count fix, README determinism note.
+- Still open (user): work-PC chat export (`scripts/export_chat.py` on that PC), reflection in own words, the ZIP. Fig. 2 labels are small in print (raster, zoomable in the PDF).
+
 ## 2026-11-19 (evening) · lab · technical report draft
 - `report/main.tex` + `report/refs.bib` → `report/main.pdf` (IEEEtran conference, two columns, 9 pages incl. references and a 1-page figure appendix). Build: `cd report && pdflatex main && bibtex main && pdflatex main && pdflatex main`.
 - Architecture figures at 200 px from forward hooks: `python scripts/draw_report_archs.py` → `results/figures/arch_report/` (own CNN final ×2, ablation block, ResNet18 ×2, MobileNetV3-L).

@@ -50,8 +50,10 @@ Every training, evaluation and test run is wrapped in `track()` (CodeCarbon) and
 
 **Re-running from scratch:** every measured cell is guarded by `already_logged(run_name)`, so with the committed logs
 the notebook only re-displays the results and starts no run (this protects the test set from being used twice).
-To repeat the measurements, move `logs/runs.csv` and `logs/emissions/emissions.csv` away first. A full re-run trains
-11 models and costs about 72 Wh (under 15 minutes of GPU time on one RTX 5090).
+To repeat the measurements, move `logs/runs.csv` and `logs/emissions/emissions.csv` away first. A full re-run makes
+10 training runs and 6 short learning-rate runs and costs about 72 Wh (under 15 minutes of GPU time on one RTX 5090).
+Re-runs give close but not bit-identical numbers: bf16 mixed precision and cuDNN's autotuned kernels are not
+deterministic on the GPU, so expect MAEs within a few hundredths of a year and energies within a few percent.
 
 | Notebook section (code cell) | What it does | Outputs |
 |---|---|---|
