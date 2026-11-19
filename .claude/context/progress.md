@@ -2,6 +2,15 @@
 
 Newest entries on top. Each entry: date, machine, what was done, decisions (with reasons), next steps.
 
+## 2026-11-19 (evening) · lab · technical report draft
+- `report/main.tex` + `report/refs.bib` → `report/main.pdf` (IEEEtran conference, two columns, 9 pages incl. references and a 1-page figure appendix). Build: `cd report && pdflatex main && bibtex main && pdflatex main && pdflatex main`.
+- Architecture figures at 200 px from forward hooks: `python scripts/draw_report_archs.py` → `results/figures/arch_report/` (own CNN final ×2, ablation block, ResNet18 ×2, MobileNetV3-L).
+- Author block has placeholders (NAME SURNAME, student no.).
+- Fixed: own CNN widths are **half** of ResNet-18's (not a quarter), ~¼ of its params (AI mistake case 16).
+- Found: `results/results.csv` column `project_kg_co2` for ResNet18 is 0.00651 (computed before the balanced-loss run); summing `logs/runs.csv` by name now gives 0.00914. The report uses 9.14 g with a footnote. Not yet changed in results.csv (user decides).
+- Diagrams (user requests): all 3 architectures on one page (Fig. 2a-c); operation written between tensors as "op / BN + ReLU / S=…, P=…" (renderer option `draw(..., ops_between=True)`); "ReLU" next to each ⊕; labels "stem: …", "identity shortcut", "projection shortcut". Section IV-A defines stem, shortcut kinds, S and P; new "Non-linearity" paragraph (17 ReLUs, why ReLU not GELU; refs ConvNeXt, Nair & Hinton, GELU). Table II uses k, S, P. Report now 11 pages (main text + refs end on p. 9, appendix p. 10-11).
+- Project totals from `logs/runs.csv`: 72 runs, 72.03 Wh, 33.47 g; own CNN family 29.45 Wh / 13.68 g, ResNet18 19.68 / 9.14, MobileNetV3 18.96 / 8.81, shared 3.94 / 1.83.
+
 ## 2026-11-19 (later) · lab · decisions, MAE by age, deliverables check
 **Decisions (user):**
 - No extra epochs: val flat at 5.15–5.19 from epoch 41 while train L1 kept falling (gap 0.8 → 1.3 y); a restart would cost ~4–19 Wh for ≤ 0.15 y and the model is already acceptable.
@@ -16,7 +25,7 @@ Newest entries on top. Each entry: date, machine, what was done, decisions (with
 
 **Diagnosis:** run01 was underfitting (train L1 5.23 ≈ val 5.79, still falling at epoch 40) → more capacity + more epochs, not more regularization.
 
-**Change (two at once, to save a run):** `own_cnn_d2` = 2 basic blocks per stage (ResNet-18 layout 2-2-2-2, widths 32-64-128-256 = ¼ of ResNet-18), 60 epochs instead of 40. Everything else identical (lr 1e-2, AdamW wd 0.01, 1 warm-up epoch + cosine, batch 128, bf16, L1, same augmentation, output scaling, seed 655).
+**Change (two at once, to save a run):** `own_cnn_d2` = 2 basic blocks per stage (ResNet-18 layout 2-2-2-2, widths 32-64-128-256 = **half** of ResNet-18's 64-512, so ~¼ of its params; an earlier note wrongly said ¼ of the widths), 60 epochs instead of 40. Everything else identical (lr 1e-2, AdamW wd 0.01, 1 warm-up epoch + cosine, batch 128, bf16, L1, same augmentation, output scaling, seed 655).
 - `OwnCNN(depths=...)` in `src/models/own_cnn.py`; depth-1 stages stay a bare block, so the old checkpoints still load.
 - Hand calc (notebook 15.7, checked by hooks): extra blocks add 18,560 + 73,984 + 295,424 + 1,180,672 = 1,568,640 params → **2,795,297**; MACs +199.8 M → **374.1 M**; RF per stage 39 / 95 / 207 / **431** px.
 

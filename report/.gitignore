@@ -1,0 +1,7 @@
+*.aux
+*.log
+*.blg
+*.out
+*.toc
+*.synctex.gz
+build.log

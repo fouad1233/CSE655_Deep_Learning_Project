@@ -11,7 +11,7 @@ Design (chosen 2026-11-18, hand calculations in notebook 02 section 15):
     head     global average pool -> 256 -> Linear(256, 1) -> age = mean + std * output (fixed scaling)
 
     depths = (2, 2, 2, 2) (variant "own_cnn_d2", 2026-11-19): every stage gets a second block with stride 1 and an
-    identity shortcut (same layout as ResNet-18, a quarter of its widths). RF after each stage: 39, 95, 207, 431.
+    identity shortcut (same layout as ResNet-18 at half its widths, so ~1/4 of its params). RF after each stage: 39, 95, 207, 431.
 
     block = "basic"      : conv3x3 -> BN -> ReLU -> conv3x3 -> BN, + shortcut, ReLU      (main design)
     block = "bottleneck" : conv1x1 (C/4) -> conv3x3 (C/4) -> conv1x1 (C), + shortcut   (ablation)

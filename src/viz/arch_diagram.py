@@ -6,6 +6,8 @@ Every layer is drawn as the tensor it OUTPUTS:
   * the kernel ("mask") of the operation is drawn as a red square on the H x W face of the
     INPUT tensor, with lines to the output tensor (like the AlexNet / PlotNeuralNet figures)
 Below each tensor: name, operation, output shape C x H x W and parameter count.
+With draw(..., ops_between=True) the operation (and its stride S / padding P) is written between the two
+tensors it connects instead, and only name, shape and parameters stay below each tensor.
 Skip connections are arcs above the tensors (add = residual, concat = channel concat,
 scale = channel-wise multiply as in squeeze-and-excitation).
 
@@ -73,6 +75,8 @@ class Node:
     repeat: int = 1                # >1: stacked ghosts + "×N"
     extra: str = ""                # optional extra line (e.g. "24→72→40")
     arrow_only: bool = False       # connect with a plain arrow instead of kernel lines
+    sp: str = ""                   # stride / padding, e.g. "S=2, P=1" (shown with the op in ops_between mode)
+    act: str = ""                  # what follows the op inside the layer, e.g. "BN + ReLU" (ops_between mode)
 
 
 @dataclass
@@ -81,6 +85,7 @@ class Skip:
     dst: int
     label: str = ""
     mode: str = "add"              # add | concat | scale
+    post: str = ""                 # operation after the merge, written next to the marker (e.g. "ReLU")
 
 
 @dataclass
@@ -108,9 +113,15 @@ def _shape(n: Node):
     return f"{n.C}×{n.H}×{n.W}"
 
 
-def _lines(n: Node):
+def _op_text(n: Node):
+    """Operation lines drawn BETWEEN two tensors (ops_between mode): bold op, then stride/padding."""
     op = n.op + (f"  ×{n.repeat}" if n.repeat > 1 else "")
-    out = [(n.name, "name"), (op, "op"), (_shape(n), "shape")]
+    return [(t, role) for t, role in ((op, "op"), (n.act, "act"), (n.sp, "sp")) if t]
+
+
+def _lines(n: Node, ops_between: bool = False):
+    op = n.op + (f"  ×{n.repeat}" if n.repeat > 1 else "")
+    out = [(n.name, "name")] + ([] if ops_between else [(op, "op")]) + [(_shape(n), "shape")]
     if n.extra:
         out.append((n.extra, "extra"))
     if n.params is not None:
@@ -118,25 +129,32 @@ def _lines(n: Node):
     return out
 
 
-def _row_geometry(nodes, skips, S):
+def _row_geometry(nodes, skips, S, ops_between=False):
     geo, x = [], MARGIN
-    for n in nodes:
+    for i, n in enumerate(nodes):
         a, b, dx, dy = _dims(n, S)
         ghost = 14 * min(n.repeat - 1, 2)
         body_w = a + dx + ghost
-        lab_w = max(len(t) for t, _ in _lines(n)) * CHAR_W
+        lab_w = max(len(t) for t, _ in _lines(n, ops_between)) * CHAR_W
         slot = max(body_w, lab_w) + 10
+        if ops_between and i > 0:
+            # the op text sits centred between this tensor and the previous one: make room for it
+            op_w = max((len(t) for t, _ in _op_text(n)), default=0) * CHAR_W * 1.2 + 50
+            prev_right = geo[-1]["x"] + geo[-1]["a"] + geo[-1]["dx"]
+            body_gap = x + (slot - body_w) / 2 - prev_right
+            if op_w > body_gap:
+                x += op_w - body_gap
         geo.append(dict(x=x + (slot - body_w) / 2, a=a, b=b, dx=dx, dy=dy, ghost=ghost,
                         cx=x + slot / 2, slot=slot))
         x += slot + GAP
     width = x - GAP + MARGIN
     max_b = max(g["b"] for g in geo)
     top_ext = max(g["b"] / 2 + g["dy"] + g["ghost"] for g in geo)
-    n_lines = max(len(_lines(n)) for n in nodes)
+    n_lines = max(len(_lines(n, ops_between)) for n in nodes)
     label_h = n_lines * LINE_H + 30
     levels = _skip_levels(skips)
-    arc_h = (120 + LEVEL_H * max(levels.values())) + (60 if any(s.label for s in skips) else 0) if skips else 30
-    height = label_h + max_b / 2 + top_ext + arc_h + 20
+    arc_h = (120 + LEVEL_H * max(levels.values())) + (60 + LINE_H * max(s.label.count(chr(10)) for s in skips) if any(s.label for s in skips) else 0) if skips else 30
+    height = label_h + _lower(max_b, ops_between) + top_ext + arc_h + 20
     return geo, width, height, label_h, max_b, levels
 
 
@@ -168,8 +186,13 @@ def _face_point(g, yc, u, v):
     return (xr + u * g["dx"], yb + v * g["b"] + u * g["dy"])
 
 
-def _draw_row(ax, title, nodes, skips, S, y0, geo, label_h, max_b, levels):
-    yc = y0 + label_h + max_b / 2
+def _lower(max_b, ops_between):
+    """space between the row's centre line and the labels below (room for the op text in the gaps)"""
+    return max(max_b / 2, 3 * LINE_H + 40) if ops_between else max_b / 2
+
+
+def _draw_row(ax, title, nodes, skips, S, y0, geo, label_h, max_b, levels, ops_between=False):
+    yc = y0 + label_h + _lower(max_b, ops_between)
     if title:
         ax.text(MARGIN, y0 - 6, title, fontsize=FONT_PT + 2, fontweight="bold", color=INK, va="top")
     # z-order: cuboid i sits at Z(i); the kernel + lines of node i sit just above cuboid i-1 (on its face)
@@ -200,9 +223,9 @@ def _draw_row(ax, title, nodes, skips, S, y0, geo, label_h, max_b, levels):
                     z=Z(i) - 0.005)
         _cuboid(ax, g["x"], yc, g["a"], g["b"], g["dx"], g["dy"], n.kind, z=Z(i))
     # labels below
-    y_lab = yc - max_b / 2 - 26
+    y_lab = yc - _lower(max_b, ops_between) - 26
     for n, g in zip(nodes, geo):
-        for j, (t, role) in enumerate(_lines(n)):
+        for j, (t, role) in enumerate(_lines(n, ops_between)):
             style = dict(name=dict(color=MUTED, fontsize=FONT_PT - 1),
                          op=dict(color=INK, fontsize=FONT_PT, fontweight="bold"),
                          shape=dict(color=INK, fontsize=FONT_PT),
@@ -211,6 +234,18 @@ def _draw_row(ax, title, nodes, skips, S, y0, geo, label_h, max_b, levels):
             ax.text(g["cx"], y_lab - j * LINE_H, t, ha="center", va="top", zorder=6, **style)
     # skip connections above
     tops = [yc + g["b"] / 2 + g["dy"] + g["ghost"] for g in geo]
+    if ops_between:
+        # operation between tensor i-1 and tensor i, written in the gap under the kernel lines
+        for i in range(1, len(nodes)):
+            lines = _op_text(nodes[i])
+            if not lines:
+                continue
+            xm = (geo[i - 1]["x"] + geo[i - 1]["a"] + geo[i - 1]["dx"] + geo[i]["x"]) / 2
+            for j, (t, role) in enumerate(lines):
+                style = dict(op=dict(color=INK, fontsize=FONT_PT, fontweight="bold"),
+                             act=dict(color="#5B4B9A", fontsize=FONT_PT - 1),
+                             sp=dict(color="#8C2F1B", fontsize=FONT_PT - 1))[role]
+                ax.text(xm, yc - 22 - j * LINE_H, t, ha="center", va="top", zorder=9, **style)
     base = max(tops) + 70
     for i, s in enumerate(skips):
         gs, gd = geo[s.src], geo[s.dst]
@@ -227,19 +262,22 @@ def _draw_row(ax, title, nodes, skips, S, y0, geo, label_h, max_b, levels):
         ax.text(xe, marker_y - 1, sym, ha="center", va="center", fontsize=FONT_PT + 2, fontweight="bold",
                 color=INK, zorder=9)
         ax.plot([xe, xe], [marker_y - 22, ye_node], color=INK, lw=2.2, zorder=7)
+        if s.post:
+            ax.text(xe + 30, marker_y, s.post, ha="left", va="center", fontsize=FONT_PT - 1,
+                    color="#5B4B9A", fontweight="bold", zorder=9, bbox=dict(fc=BG, ec="none", pad=1))
         if s.label:
             ax.text((xs + xe) / 2, peak + 10, s.label, ha="center", va="bottom",
                     fontsize=FONT_PT - 1, color=INK, zorder=9,
                     bbox=dict(fc=BG, ec="none", pad=2))
 
 
-def draw(rows, path, scale: Scale | None = None, caption: str = ""):
+def draw(rows, path, scale: Scale | None = None, caption: str = "", ops_between: bool = False):
     """rows: list of (title, nodes, skips), first row drawn at the top.
     Writes a PNG at DPI 200 and returns its pixel size (width, height)."""
     S = scale or Scale()
     laid = []
     for title, nodes, skips in rows:
-        geo, w, h, label_h, max_b, levels = _row_geometry(nodes, skips, S)
+        geo, w, h, label_h, max_b, levels = _row_geometry(nodes, skips, S, ops_between)
         laid.append(dict(title=title, nodes=nodes, skips=skips, geo=geo, w=w, h=h,
                          label_h=label_h, max_b=max_b, levels=levels,
                          title_h=FONT_PX * 1.8 if title else 0))
@@ -253,7 +291,8 @@ def draw(rows, path, scale: Scale | None = None, caption: str = ""):
         ax.text(MARGIN, MARGIN, caption, fontsize=FONT_PT - 1, color=MUTED, va="bottom")
     y = MARGIN + cap_h                      # y grows upwards: draw the LAST row first, at the bottom
     for r in reversed(laid):
-        _draw_row(ax, None, r["nodes"], r["skips"], S, y, r["geo"], r["label_h"], r["max_b"], r["levels"])
+        _draw_row(ax, None, r["nodes"], r["skips"], S, y, r["geo"], r["label_h"], r["max_b"], r["levels"],
+                  ops_between)
         if r["title"]:
             ax.text(MARGIN, y + r["h"] + r["title_h"] * 0.35, r["title"], fontsize=FONT_PT + 2,
                     fontweight="bold", color=INK, va="bottom")
