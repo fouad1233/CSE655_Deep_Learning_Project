@@ -20,3 +20,7 @@ Collected while working, so nothing is forgotten when the report is written. Num
 ## Bias analysis (Section: bias)
 - Age and group are confounded (0–2 band 39 % Asian; 80+ band 72 % White; women dominate ages 3–29, men 40–69). The constant predictor already gives very different per-group MAE (Black 10.6 vs. White 17.9). So report per-group MAE **within age bands** and/or the improvement over the constant baseline per group.
 - Strong age heaping at 40–90 (multiples of 10 occur 2.4–5.9× more often than their neighbours): many labels of older people are estimates, which puts a floor on the reachable error.
+
+## Limitations (Section: limitations)
+- **Crop scale:** augmentation has no zoom/scale; train and test faces share the same UTKFace alignment, so robustness to tighter or looser face crops is not measured and the from-scratch CNN is probably more sensitive to it than the ImageNet-pretrained models. Fix (not run, to save CO2): random zoom augmentation (scale 0.8–1.2).
+- **Error by age** (`results/figures/test_mae_by_age_own_vs_standard.png`, notebook 15.9): all models' MAE rises with age (0–2: ~1 y, 80+: 9–12 y); own CNN is closest to ResNet18 at 20–29 and 70–79, and best of all at 0–2.

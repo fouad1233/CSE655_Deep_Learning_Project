@@ -2,6 +2,15 @@
 
 Newest entries on top. Each entry: date, machine, what was done, decisions (with reasons), next steps.
 
+## 2026-11-19 (later) · lab · decisions, MAE by age, deliverables check
+**Decisions (user):**
+- No extra epochs: val flat at 5.15–5.19 from epoch 41 while train L1 kept falling (gap 0.8 → 1.3 y); a restart would cost ~4–19 Wh for ≤ 0.15 y and the model is already acceptable.
+- No zoom/scale-augmentation retrain. Mention as a **limitation** only: the augmentation is flip + small rotation/shift + greyscale, **no scale/zoom**, and all training and test faces come from the same aligned UTKFace crop, so the own CNN is probably sensitive to how tightly a face is cropped (not measured on the test set). ResNet18 benefits from ImageNet pre-training at many scales. Proposed fix: random zoom (e.g. scale 0.8–1.2). Not tested, to save CO2.
+
+**Done:** notebook 15.9 (cells 57–58): test MAE by age band from the existing per-group test files (no new run) → `results/figures/test_mae_by_age_own_vs_standard.png`. Own final vs ResNet18 full: better at 0–2 (0.97 vs 1.19), within 3–16 % elsewhere, worst at 3–12 (+28 %), 50–59 and 80+ (+16 %). Error grows with age for all models (age heaping, fewer images). Fixed header 15.8 (said run01, is run02).
+
+**Deliverables still open:** technical report PDF (≤ 10 p), AI Usage Report PDF (2–5 p: tools/versions, log, ≥ 3 mistakes [15 logged], verification, reflection, chat export appendix), README with exact reproduce steps (currently only setup + data), own-CNN per-layer table for the final d2 model in the report, final weights `checkpoints/own_cnn_d2_run02.pt` (11.2 MB, gitignored → add to the ZIP), ZIP `StudentNo_Surname_CSE655_Project.zip`. Commit 2a503a9 and later are not pushed.
+
 ## 2026-11-19 · lab · own CNN improvement → ACCEPTABLE
 **User OK:** "yes do it continue" (one improvement run after own_cnn_run01 missed the limit by 0.28 y).
 
