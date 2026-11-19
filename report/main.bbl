@@ -58,7 +58,7 @@ W.~Cao, V.~Mirjalili, and S.~Raschka, ``Rank consistent ordinal regression for
 \bibitem{zhang2017utkface}
 Z.~Zhang, Y.~Song, and H.~Qi, ``Age progression/regression by conditional
   adversarial autoencoder,'' in \emph{Proc. IEEE Conf. Computer Vision and
-  Pattern Recognition (CVPR)}, 2017, pp. 5810--5818.
+  Pattern Recognition (CVPR)}, 2017, pp. 4352--4360.
 
 \bibitem{he2016resnet}
 K.~He, X.~Zhang, S.~Ren, and J.~Sun, ``Deep residual learning for image
@@ -116,8 +116,8 @@ Y.~Yang, K.~Zha, Y.-C. Chen, H.~Wang, and D.~Katabi, ``Delving into deep
 {py97}, ``{UTKFace-Cropped}: re-upload of the {UTKFace} aligned and cropped
   faces, revision e80f21f,''
   \url{https://huggingface.co/datasets/py97/UTKFace-Cropped}, 2026, original
-  dataset page: \url{https://susanqq.github.io/UTKFace/}; non-commercial
-  research licence; accessed Nov. 2026.
+  dataset page: \url{https://susanqq.github.io/UTKFace/}; licence of the
+  original dataset: non-commercial research use; accessed Nov. 2026.
 
 \bibitem{nair2010relu}
 V.~Nair and G.~E. Hinton, ``Rectified linear units improve restricted
@@ -131,7 +131,7 @@ D.~Hendrycks and K.~Gimpel, ``Gaussian error linear units ({GELUs}),''
 \bibitem{liu2022convnext}
 Z.~Liu, H.~Mao, C.-Y. Wu, C.~Feichtenhofer, T.~Darrell, and S.~Xie, ``A
   {ConvNet} for the 2020s,'' in \emph{Proc. IEEE/CVF Conf. Computer Vision and
-  Pattern Recognition (CVPR)}, 2022, pp. 11\,976--11\,986.
+  Pattern Recognition (CVPR)}, 2022, pp. 11\,966--11\,976.
 
 \bibitem{lin2014nin}
 M.~Lin, Q.~Chen, and S.~Yan, ``Network in network,'' in \emph{Proc. Int. Conf.
@@ -170,6 +170,6 @@ P.~Micikevicius, S.~Narang, J.~Alben, G.~Diamos, E.~Elsen, D.~Garcia,
 A.~Paszke, S.~Gross, F.~Massa, A.~Lerer, J.~Bradbury, G.~Chanan \emph{et~al.},
   ``{PyTorch}: An imperative style, high-performance deep learning library,''
   in \emph{Advances in Neural Information Processing Systems (NeurIPS)},
-  vol.~32, 2019, pp. 8024--8035.
+  vol.~32, 2019.
 
 \end{thebibliography}

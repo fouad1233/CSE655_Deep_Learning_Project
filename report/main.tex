@@ -143,7 +143,7 @@ Table~\ref{tab:layers} uses
 \text{MACs} &= H_{\text{out}} W_{\text{out}} C_{\text{out}} C_{\text{in}} k^2,\\
 \text{RF}_{\text{new}} &= \text{RF}_{\text{old}} + (k-1)\,j, \quad j_{\text{new}} = j\cdot S,
 \end{align*}
-where $j$ is the jump (input pixels between neighbouring outputs). Convolutions have no bias because the following BatchNorm~\cite{ioffe2015bn} has its own shift; BN contributes $\gamma$ and $\beta$ per channel. For example, the stem has $3\cdot32\cdot9 + 64 = 928$ parameters and $100\cdot100\cdot32\cdot3\cdot9 = 8.64$\,M MACs, and its receptive field is $1 + 2\cdot1 = 3$ with jump 2. The total is 2{,}795{,}297 parameters and 374.1\,M MACs (748.2\,MFLOPs) per image; both were checked against PyTorch hooks. The receptive field reaches 431\,px after stage 4, i.e.\ every output position can see the whole 200\,px face.
+where $j$ is the jump (input pixels between neighbouring outputs). Convolutions have no bias because the following BatchNorm~\cite{ioffe2015bn} has its own shift; BN contributes $\gamma$ and $\beta$ per channel. For example, the stem has $3\cdot32\cdot9 + 64 = 928$ parameters and $100\cdot100\cdot32\cdot3\cdot9 = 8.64$\,M MACs, and its receptive field is $1 + 2\cdot1 = 3$ with jump 2. The total is 2{,}795{,}297 parameters and 374.1\,M MACs (748.2\,MFLOPs) per image; both were checked against PyTorch hooks. The theoretical receptive field reaches 431\,px after stage 4, so every output position can in principle see the whole 200\,px face (the effective receptive field, where most of the weight lies, is smaller). The MAC count covers convolutions and the head; BatchNorm, ReLU, pooling and the residual additions add only a few element-wise operations per value.
 
 \begin{table}[t]
 \caption{Every layer of the final CNN (input $3\times200\times200$). $k$ = kernel size, S = stride, P = padding; params include BatchNorm; RF = receptive field in input pixels.}
@@ -180,10 +180,10 @@ fc (head) & -- & 1 & 257 & $<$0.01 & -- \\
 
 \subsection{Training setup and justification}
 \label{sec:owntrain}
-\emph{Loss and metric:} L1 loss, so training optimises the reported MAE and is less sensitive than MSE to noisy labels of old people. \emph{Initialisation:} Kaiming normal~\cite{he2015delving} for convolutions; the last BN $\gamma$ of every residual branch starts at 0, so each block starts as its shortcut and the untrained network behaves like a shallow one~\cite{goyal2017accurate}. \emph{Optimiser:} AdamW~\cite{loshchilov2019adamw}, weight decay 0.01, batch 128, one linear warm-up epoch followed by cosine decay to zero~\cite{loshchilov2017sgdr}, bf16 mixed precision~\cite{micikevicius2018mixed}. \emph{Learning rate:} chosen on a 4{,}000-image subset (10 epochs each); validation MAE was 11.87, 10.42 and 10.01 for $10^{-3}$, $3\cdot10^{-3}$ and $10^{-2}$, so we used $10^{-2}$. \emph{Augmentation} (identical for all models, training only): horizontal flip ($p=0.5$), rotation $\pm10^{\circ}$ and shift $\pm8$\,px in one bilinear resampling with black fill, greyscale ($p=0.1$). \emph{Regularisation:} weight decay, augmentation and BatchNorm; no dropout. \emph{Stopping:} a fixed epoch budget, keeping the weights of the best validation epoch.
+\emph{Loss and metric:} L1 loss, so training optimises the reported MAE and is less sensitive than MSE to noisy labels of old people. \emph{Initialisation:} Kaiming normal~\cite{he2015delving} for convolutions; the last BN $\gamma$ of every residual branch starts at 0, so each block starts as its shortcut and the untrained network behaves like a shallow one~\cite{goyal2017accurate}. \emph{Optimiser:} AdamW~\cite{loshchilov2019adamw}, weight decay 0.01, batch 128, one linear warm-up epoch followed by cosine decay to zero~\cite{loshchilov2017sgdr}, bf16 mixed precision~\cite{micikevicius2018mixed}. \emph{Learning rate:} chosen on a 4{,}000-image subset (10 epochs each); validation MAE was 11.87, 10.42 and 10.01 for $10^{-3}$, $3\cdot10^{-3}$ and $10^{-2}$ (Fig.~\ref{fig:lrsearch}, appendix), so we used $10^{-2}$. \emph{Augmentation} (identical for all models, training only): horizontal flip ($p=0.5$), rotation $\pm10^{\circ}$ and shift $\pm8$\,px in one bilinear resampling with black fill, greyscale ($p=0.1$). \emph{Regularisation:} weight decay, augmentation and BatchNorm; no dropout. \emph{Stopping:} a fixed epoch budget, keeping the weights of the best validation epoch.
 
 \subsection{From the first version to the final model}
-The first version had one block per stage (1.23\,M parameters, 174.3\,M MACs, RF 191) and reached a validation MAE of 5.79 and a test MAE of 5.77 after 40 epochs, \emph{not} acceptable (limit 5.48). Its training loss (5.23) was close to the validation MAE and still falling (Fig.~\ref{fig:d2}), i.e.\ it was underfitting. We therefore added a second block per stage (ResNet18's 2-2-2-2 layout) and trained 60 instead of 40 epochs. To save a run, both changes were made at once, so their individual effects cannot be separated. The final model reached a validation MAE of 5.145 and a test MAE of 5.140. The last 20 epochs improved validation by only 0.03 years while the training loss fell from 4.39 to 3.81, so we did not train longer.
+The first version had one block per stage (1.23\,M parameters, 174.3\,M MACs, RF 191) and reached a validation MAE of 5.79 and a test MAE of 5.77 after 40 epochs, \emph{not} acceptable (limit 5.48). The decision to improve it did not depend on the test set: its validation MAE (5.794) was already above the limit, and the limit itself has to come from test MAEs (Section~\ref{sec:results}). Its training loss (5.23) was close to the validation MAE and still falling (Fig.~\ref{fig:d2}), i.e.\ it was underfitting. We therefore added a second block per stage (ResNet18's 2-2-2-2 layout) and trained 60 instead of 40 epochs. To save a run, both changes were made at once, so their individual effects cannot be separated. The final model reached a validation MAE of 5.145 and a test MAE of 5.140. The last 20 epochs improved validation by only 0.03 years while the training loss fell from 4.39 to 3.81, so we did not train longer (loss per step and time per epoch of this run: Fig.~\ref{fig:d2train}, appendix).
 
 \begin{figure}[t]
 \centering
@@ -194,7 +194,7 @@ The first version had one block per stage (1.23\,M parameters, 174.3\,M MACs, RF
 
 \subsection{Ablation: basic vs.\ bottleneck blocks}
 \label{sec:ablation}
-As the required ablation we changed \emph{one} design choice of the first version and kept everything else (40 epochs, same data, seed and schedule): the basic block was replaced by a bottleneck block~\cite{he2016resnet} ($1\times1$ to $C/4$, $3\times3$, $1\times1$ back to $C$; Fig.~\ref{fig:bottle}). Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation} show the result. The bottleneck network has 10$\times$ fewer parameters and 6.6$\times$ fewer MACs, but its error is 1.67 years higher (test 7.43) and it saved only 7\,\% of the energy per epoch. Both networks ran at about 1.2\,s per epoch, the time of our data pipeline (augmentation on the GPU, batch loading): below that point, a smaller model no longer reduces energy. Its receptive field (71\,px) is also much smaller than the face, because only one of its three convolutions per block is $3\times3$.
+As the required ablation we changed \emph{one} design choice of the first version and kept everything else (40 epochs, same data, seed and schedule): the basic block was replaced by a bottleneck block~\cite{he2016resnet} ($1\times1$ to $C/4$, $3\times3$, $1\times1$ back to $C$; Fig.~\ref{fig:bottle}). Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation} show the result. The bottleneck network has 9.6$\times$ fewer parameters and 6.6$\times$ fewer MACs, but its error is 1.67 years higher (test 7.43) and it saved only 7\,\% of the energy per epoch. Both networks ran at about 1.2\,s per epoch, the time of our data pipeline (augmentation on the GPU, batch loading): below that point, a smaller model no longer reduces energy. Its receptive field (71\,px) is also much smaller than the face, because only one of its three convolutions per block is $3\times3$.
 
 \begin{figure}[t]
 \centering
@@ -239,7 +239,7 @@ Two strategies were trained for each model, 15 epochs, batch 128, bf16, L1, Adam
 \item \textbf{A (partial):} one epoch training only the head (lr $10^{-3}$), then the last layers (ResNet18: \texttt{layer3}, \texttt{layer4}; MobileNetV3: blocks 7--16), head lr $10^{-3}$ and backbone lr $10^{-4}$ with cosine decay; the early layers stay frozen with their BatchNorm in evaluation mode.
 \item \textbf{Full:} all layers from the first epoch with the same learning rates.
 \end{itemize}
-A first attempt with early stopping (patience 3) stopped ResNet18 while it was still improving at a low learning rate, so all final runs use the fixed 15-epoch budget. Full fine-tuning was better on validation for both models (ResNet18 4.761 vs.\ 4.993; MobileNetV3 5.092 vs.\ 5.242) at about 1.9$\times$ the energy.
+A first attempt with early stopping (patience 3) stopped ResNet18 while it was still improving at a low learning rate, so all final runs use the fixed 15-epoch budget (training curves in Fig.~\ref{fig:stdcurves}, appendix). Full fine-tuning was better on validation for both models (ResNet18 4.761 vs.\ 4.993; MobileNetV3 5.092 vs.\ 5.242) at about 1.9$\times$ the energy.
 
 % =====================================================================
 \section{Measuring the Footprint}
@@ -248,7 +248,7 @@ A first attempt with early stopping (patience 3) stopped ResNet18 while it was s
 
 \emph{Tool.} Every training, evaluation, test, search, cache-building and failed run is wrapped in CodeCarbon 3.3.2~\cite{codecarbon} (\texttt{OfflineEmissionsTracker}, country code TUR, grid intensity 465\,g~\cotwoeq/kWh). CodeCarbon samples GPU power through NVML, CPU power, and RAM power, integrates them over time, and multiplies the energy by the grid intensity. The lab machine is shared with other users, so we (i) measure only GPU~0, (ii) use CodeCarbon's \emph{process} mode for CPU and RAM, so other users' processes are not charged to us, and (iii) log any foreign process found on our GPU. All logs are in \texttt{logs/emissions/emissions.csv} (CodeCarbon) and \texttt{logs/runs.csv} (one row per run).
 
-\emph{Inference metrics.} Latency is the mean time per image at batch size 1. Energy per 1{,}000 predictions is measured by repeating validation images at batch 512 for about 10\,s, because CodeCarbon samples power every few seconds and a single test pass lasts less than 1.5\,s.
+\emph{Inference metrics.} Latency is the mean time per image at batch size 1. At this batch size a GPU is limited by the number of kernel launches rather than by arithmetic. Our final CNN has the same 2-2-2-2 layout, and therefore the same number of layers, as ResNet18, so both take 0.80\,ms per image despite 4$\times$ fewer MACs; our 1-block versions take 0.55--0.63\,ms. Energy per 1{,}000 predictions is measured by repeating validation images at batch 512 for about 10\,s, because CodeCarbon samples power every few seconds and a single test pass lasts less than 1.5\,s.
 
 \emph{Caveat.} On the last day another user's language model was running on GPU~0 at up to 254\,W. NVML reports the power of the whole board, so the energies of the final CNN's training run and inference benchmark are upper bounds. Epochs 12--40 of that run took 2.0\,s instead of 1.6\,s, which suggests the two jobs competed for the GPU.
 
@@ -259,40 +259,40 @@ A first attempt with early stopping (patience 3) stopped ResNet18 while it was s
 Table~\ref{tab:results} is the main result. The best standard model is ResNet18 with full fine-tuning (test MAE 4.768), so the binding condition is $\mathrm{MAE}_{\text{own}} \le 1.15\times4.768 = 5.483$ (the second condition gives 9.24). Our final CNN reaches \textbf{5.140} and is \textbf{acceptable}, 0.34 years under the limit. The first version (5.765) and the bottleneck ablation (7.434) are not. Validation predicted test well for every model (differences $\le0.11$ years), confirming that the test set was not overfitted by our choices.
 
 \begin{table*}[t]
-\caption{Main results on the test set (3{,}461 images, each final model evaluated once). MFLOPs = $2\times$ MACs per image. Train = final training run; Project = all tracked runs of that architecture family, including searches, failed runs, tests and benchmarks.}
+\caption{Main results on the test set (3{,}461 images, each final model evaluated once). MFLOPs = $2\times$ MACs per image. Train = final training run (wall-clock time, energy, emissions); Project = all tracked runs of that architecture family, including searches, failed runs, tests and benchmarks.}
 \label{tab:results}
-\centering\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lrrrrrrrrrrr@{}}
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrrrrrrrrr@{}}
 \toprule
-Model & Params & MFLOPs & Test & RMSE & $R^2$ & Train & Train & Project & ms/ & Wh/1000 & Size \\
- & & /img & MAE & & & kWh & kg \cotwoeq & kg \cotwoeq & img & pred. & MB \\
+Model & Params & MFLOPs & Test & RMSE & $R^2$ & Train & Train & Train & Project & Project & ms/ & Wh/1000 & Size \\
+ & & /img & MAE & & & time (s) & kWh & kg \cotwoeq & kWh & kg \cotwoeq & img & pred. & MB \\
 \midrule
-Mean baseline & 0 & 0 & 15.400 & 20.007 & 0.000 & -- & -- & -- & -- & -- & -- \\
-Median baseline & 0 & 0 & 15.072 & 20.471 & $-0.047$ & -- & -- & -- & -- & -- & -- \\
+Mean baseline & 0 & 0 & 15.400 & 20.007 & 0.000 & -- & -- & -- & -- & -- & -- & -- & -- \\
+Median baseline & 0 & 0 & 15.072 & 20.471 & $-0.047$ & -- & -- & -- & -- & -- & -- & -- & -- \\
 \midrule
-ResNet18, A (partial) & 11{,}177{,}025 & 3111.7 & 4.888 & 6.996 & 0.878 & 0.00302 & 0.00140 & \multirow{2}{*}{0.00914$^{\dagger}$} & 0.80 & 0.0066 & 44.8 \\
-\textbf{ResNet18, full} (best standard) & 11{,}177{,}025 & 3111.7 & \textbf{4.768} & 6.780 & 0.885 & 0.00571 & 0.00265 & & 0.80 & 0.0067 & 44.8 \\
-MobileNetV3-L, A (partial) & 4{,}203{,}313 & 374.5 & 5.331 & 7.441 & 0.862 & 0.00405 & 0.00188 & \multirow{2}{*}{0.00881} & 2.18 & 0.0075 & 17.0 \\
-MobileNetV3-L, full & 4{,}203{,}313 & 374.5 & 5.141 & 7.238 & 0.869 & 0.00753 & 0.00350 & & 2.12 & 0.0075 & 17.0 \\
+ResNet18, A (partial) & 11{,}177{,}025 & 3111.7 & 4.888 & 6.996 & 0.878 & 21.2 & 0.00302 & 0.00140 & \multirow{2}{*}{0.01968} & \multirow{2}{*}{0.00914$^{\dagger}$} & 0.80 & 0.0066 & 44.8 \\
+\textbf{ResNet18, full} (best std.) & 11{,}177{,}025 & 3111.7 & \textbf{4.768} & 6.780 & 0.885 & 43.6 & 0.00571 & 0.00265 & & & 0.80 & 0.0067 & 44.8 \\
+MobileNetV3-L, A (partial) & 4{,}203{,}313 & 374.5 & 5.331 & 7.441 & 0.862 & 29.2 & 0.00405 & 0.00188 & \multirow{2}{*}{0.01896} & \multirow{2}{*}{0.00881} & 2.18 & 0.0075 & 17.0 \\
+MobileNetV3-L, full & 4{,}203{,}313 & 374.5 & 5.141 & 7.238 & 0.869 & 68.5 & 0.00753 & 0.00350 & & & 2.12 & 0.0075 & 17.0 \\
 \midrule
-Own CNN, 1 block/stage & 1{,}226{,}657 & 348.6 & 5.765 & 8.118 & 0.835 & 0.00512 & 0.00238 & \multirow{3}{*}{0.01368} & 0.55 & 0.0019 & 4.9 \\
-Own CNN, bottleneck (ablation) & 128{,}257 & 53.0 & 7.434 & 10.100 & 0.745 & 0.00477 & 0.00222 & & 0.63 & 0.0017 & 0.6 \\
-\textbf{Own CNN, 2 blocks/stage (final)} & 2{,}795{,}297 & 748.2 & \textbf{5.140} & 7.424 & 0.862 & 0.01240 & 0.00576 & & 0.80 & 0.0027 & 11.2 \\
+Own CNN, 1 block/stage & 1{,}226{,}657 & 348.6 & 5.765 & 8.118 & 0.835 & 49.7 & 0.00512 & 0.00238 & \multirow{3}{*}{0.02945} & \multirow{3}{*}{0.01368} & 0.55 & 0.0019 & 4.9 \\
+Own CNN, bottleneck (ablation) & 128{,}257 & 53.0 & 7.434 & 10.100 & 0.745 & 53.0 & 0.00477 & 0.00222 & & & 0.63 & 0.0017 & 0.6 \\
+\textbf{Own CNN, final} (2 blocks/stage) & 2{,}795{,}297 & 748.2 & \textbf{5.140} & 7.424 & 0.862 & 114.2 & 0.01240 & 0.00576 & & & 0.80 & 0.0027 & 11.2 \\
 \bottomrule
-\multicolumn{12}{@{}l}{\footnotesize $^{\dagger}$Includes the 2.62\,g balanced-loss experiment of Section~\ref{sec:bias}. Shared runs (cache, tests, baseline, bias evaluation: 1.83\,g) are not attributed to a family.}
+\multicolumn{14}{@{}l}{$^{\dagger}$Includes the 2.62\,g balanced-loss experiment of Section~\ref{sec:bias}. Shared runs (cache, code tests, baselines, bias evaluation: 3.94\,Wh, 1.83\,g) belong to no family.}
 \end{tabular}
 \end{table*}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\linewidth]{error_vs_co2_with_own_cnn.png}
-\caption{Test MAE vs.\ \cotwo{} of the final training run (log scale), one point per configuration. The dashed line is the Pareto front (no other model is both more accurate and cheaper); the dotted line is the acceptability limit 5.483.}
+\includegraphics[width=0.9\textwidth]{error_vs_co2_final_and_project.png}
+\caption{Test MAE vs.\ kg~\cotwoeq{} (log scale), one point per configuration: (a) \cotwo{} of the final training run, (b) \cotwo{} of the whole project, i.e.\ all tracked runs of the architecture family (Table~\ref{tab:results}). The dashed line is the Pareto front (no other configuration is both more accurate and cheaper); the dotted line is the acceptability limit 5.483.}
 \label{fig:pareto}
-\end{figure}
+\end{figure*}
 
 \subsection{Error vs.\ \cotwo{}}
-Fig.~\ref{fig:pareto} plots test MAE against the training emissions. On this axis the Pareto front consists only of the two ResNet18 runs: fine-tuning a pre-trained network for 15 epochs is both more accurate and cheaper than our 60-epoch training from scratch. Our final CNN is the most expensive training run (5.76\,g, 2.2$\times$ ResNet18 full), and over the whole project our CNN family cost 13.68\,g against 9.14\,g for ResNet18 and 8.81\,g for MobileNetV3. Two facts change this picture:
+Fig.~\ref{fig:pareto} plots test MAE against the emissions of the final training run (a) and of the whole project (b), since the assignment judges the total footprint. In (a) the Pareto front consists only of the two ResNet18 runs: fine-tuning a pre-trained network for 15 epochs is both more accurate and cheaper than our 60-epoch training from scratch. Our final CNN is the most expensive training run (5.76\,g, 2.2$\times$ ResNet18 full). In (b) the front is MobileNetV3-L full (8.81\,g) and ResNet18 (9.14\,g): our CNN family cost 13.68\,g in total, because designing a network from scratch needed a learning-rate search, a first version, an ablation and the final run. Two facts change this picture:
 \begin{enumerate}
 \item \emph{Inference.} Our CNN needs 0.0027\,Wh per 1{,}000 predictions vs.\ 0.0067 for ResNet18 and 0.0075 for MobileNetV3. Its extra training energy (12.40$-$5.71 = 6.69\,Wh) is repaid after $6.69/0.0040 \approx 1.7$ million predictions; a deployed model passes this point quickly. In inference energy our CNN dominates MobileNetV3 (same MAE, 2.8$\times$ less energy).
 \item \emph{Pre-training is not free.} The ResNet18 weights were trained on ImageNet's 1.28\,M images for 90 epochs at 224\,px. Relative to our 15-epoch fine-tuning this is $79\times$ the images, $1.25\times$ the pixels and $6\times$ the epochs, about $600\times$ the work. On our GPU that would be roughly $600\times5.7\,\text{Wh}\approx3.4$\,kWh $\approx1.6$\,kg~\cotwoeq, about 600 times the fine-tuning run. This cost is shared by everyone who downloads the weights, so it is fair to amortise it, but it is not zero; MobileNetV3's 600-epoch recipe is even more costly.
@@ -323,7 +323,7 @@ Fig.~\ref{fig:findings}(b) in the appendix shows that MobileNetV3-L has 8$\times
 \label{fig:valbias}
 \end{figure*}
 
-\textbf{Balancing does not help here.} We retrained ResNet18 (full) with each image's L1 loss weighted by $w_b = c/\sqrt{n_b}$, where $n_b$ is the number of training images in its age band and $c$ makes the mean weight 1 (weights from 0.61 for 20--29 to 2.01 for 80+). Validation MAE rose from 4.762 to 4.960, the mean of the 10 band MAEs rose from 5.357 to 5.409, and the bias at 80+ barely moved ($-7.61\to-7.19$). The weighted loss reduces the effective sample size by 13\,\% and the old-age error appears to be partly genuine ambiguity (and label heaping), not only a lack of examples. We kept the plain L1 loss. This run cost 2.62\,g and used validation data only.
+\textbf{Balancing does not help here.} We retrained ResNet18 (full) with each image's L1 loss weighted by $w_b = c/\sqrt{n_b}$, where $n_b$ is the number of training images in its age band and $c$ makes the mean weight 1 (weights from 0.61 for 20--29 to 2.01 for 80+). Validation MAE rose from 4.762 to 4.960, the mean of the 10 band MAEs rose from 5.357 to 5.409, and the bias at 80+ barely moved ($-7.61\to-7.19$; Fig.~\ref{fig:balanced}, appendix). The weighted loss reduces the effective sample size by 13\,\% and the old-age error appears to be partly genuine ambiguity (and label heaping), not only a lack of examples. We kept the plain L1 loss. This run cost 2.62\,g and used validation data only.
 
 \textbf{By gender and race.} Table~\ref{tab:groups} gives the test MAE per group. The differences between races are large even for the constant baseline (Black 10.6 vs.\ White 17.9 years) because age and race are confounded in UTKFace (e.g.\ 39\,\% of the 0--2 band is Asian, 72\,\% of the 80+ band is White). Groups with many children or young adults (Asian, Others) therefore have lower MAEs for every model. All three models rank the groups similarly (White and Black highest, Asian and Others lowest); our CNN's errors are 5--9\,\% higher than ResNet18's in every group, i.e.\ we see no group-specific disadvantage beyond its overall gap. Women have lower MAEs than men for all models, also partly because women dominate the younger bands.
 
@@ -362,7 +362,7 @@ Others & 242 & 14.35 & 3.35 & 3.61 & 3.52 \\
 A small residual CNN trained from scratch (2.80\,M parameters, 374\,M MACs) reached a test MAE of 5.14 years on UTKFace and is acceptable under the assignment's definition, 8\,\% behind fully fine-tuned ResNet18 (4.77) and level with MobileNetV3-Large (5.14). The whole project used 72.0\,Wh and emitted 33.5\,g~\cotwoeq, every run measured. The cheapest acceptable result in \emph{training} \cotwo{} was not our model but a short fine-tuning of a pre-trained ResNet18; our model wins on size and inference energy and avoids the pre-training cost. On modern GPUs, measured energy, not MACs, should guide green model design.
 
 \section*{Reproducibility}
-Code, notebooks, the split file, all CodeCarbon logs and \texttt{results/results.csv} are in the project repository; the README lists the commands for every number. The final weights are \texttt{checkpoints/own\_cnn\_d2\_run02.pt} (11.2\,MB). Seed 655 everywhere.
+Code, notebooks, the split file, all CodeCarbon logs and \texttt{results/results.csv} are in the project repository; \texttt{README.md} lists the commands that produce every table and figure. The final weights are \texttt{weights/final/own\_cnn\_d2\_run02.pt} (11.2\,MB). Seed 655 everywhere.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
