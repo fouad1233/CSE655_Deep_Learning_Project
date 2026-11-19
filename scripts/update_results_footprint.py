@@ -30,7 +30,10 @@ train = runs[(runs["kind"] == "train") & (runs["status"] == "ok")].set_index("ru
 
 for i, row in res.iterrows():
     f = family(row.get("run"))
-    if f is None:                      # baselines: no training, no project footprint
+    if f is None:                      # baselines: no training, no model to time -> empty, not 0
+        for col in ("train_kwh", "train_kg_co2", "ms_per_img"):
+            if col in res.columns:
+                res.loc[i, col] = float("nan")
         continue
     res.loc[i, "train_s"] = float(train.get(row["run"], float("nan")))
     res.loc[i, "project_kwh"] = fam.loc[f, "energy_kwh"]

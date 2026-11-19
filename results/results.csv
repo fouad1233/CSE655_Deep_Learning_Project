@@ -1,6 +1,6 @@
 model,machine,params,mflops_per_img,test_mae,test_rmse,test_r2,train_kwh,train_kg_co2,project_kg_co2,ms_per_img,run,strategy,val_mae,wh_per_1000_pred,size_mb,train_s,project_kwh
-mean baseline,lab,0,0.0,15.4,20.007,-0.0,0.0,0.0,,0.0,,,,,,,
-median baseline,lab,0,0.0,15.072,20.471,-0.047,0.0,0.0,,0.0,,,,,,,
+mean baseline,lab,0,0.0,15.4,20.007,-0.0,,,,,,,,,,,
+median baseline,lab,0,0.0,15.072,20.471,-0.047,,,,,,,,,,,
 "ResNet18 (A: head, then layer3-4)",lab,11177025,3111.7,4.888,6.996,0.8777,0.003015064064745269,0.0014007565535837456,0.009143952897445849,0.804,resnet18_A_run02,A,4.993,0.0066,44.79,21.2,0.019681938107144532
 "MobileNetV3-L (A: head, then blocks 7-16)",lab,4203313,374.5,5.331,7.441,0.8617,0.004046039712451058,0.001879733405848787,0.008808938834280694,2.182,mobilenet_v3_large_A_run02,A,5.242,0.0075,17.02,29.2,0.018960835742533554
 ResNet18 (full fine-tuning),lab,11177025,3111.7,4.768,6.78,0.8852,0.0057136788408891715,0.0026544951979733367,0.009143952897445849,0.799,resnet18_full_run01,full,4.761,0.0067,44.79,43.6,0.019681938107144532
