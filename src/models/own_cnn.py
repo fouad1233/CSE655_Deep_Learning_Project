@@ -10,6 +10,9 @@ Design (chosen 2026-11-18, hand calculations in notebook 02 section 15):
     stage4   block 128->256, stride 2   -> 256 x  7 x  7      RF 191   jump 32
     head     global average pool -> 256 -> Linear(256, 1) -> age = mean + std * output (fixed scaling)
 
+    depths = (2, 2, 2, 2) (variant "own_cnn_d2", 2026-11-19): every stage gets a second block with stride 1 and an
+    identity shortcut (same layout as ResNet-18, a quarter of its widths). RF after each stage: 39, 95, 207, 431.
+
     block = "basic"      : conv3x3 -> BN -> ReLU -> conv3x3 -> BN, + shortcut, ReLU      (main design)
     block = "bottleneck" : conv1x1 (C/4) -> conv3x3 (C/4) -> conv1x1 (C), + shortcut   (ablation)
     shortcut = identity if the shape stays the same, else conv1x1 (stride 2) + BN ("projection")
@@ -63,16 +66,24 @@ class ResidualBlock(nn.Module):
 
 
 class OwnCNN(nn.Module):
-    def __init__(self, block: str = "basic", widths=(32, 64, 128, 256)):
+    def __init__(self, block: str = "basic", widths=(32, 64, 128, 256), depths=(1, 1, 1, 1)):
         super().__init__()
         w1, w2, w3, w4 = widths
+
+        def stage(c_in, c_out, stride, n):
+            """n residual blocks: the first changes the shape (stride / channels), the others keep it (identity shortcut).
+            n = 1 -> the block itself (keeps the weight names of the first trained models: stage1.main...)."""
+            blocks = [ResidualBlock(c_in, c_out, stride, block)] + [ResidualBlock(c_out, c_out, 1, block) for _ in range(n - 1)]
+            return blocks[0] if n == 1 else nn.Sequential(*blocks)
+
         # stem: shrink 200 -> 100 (strided conv) -> 50 (max pool) early, where the tensors are biggest
         self.stem = nn.Sequential(conv_bn(3, w1, 3, 2),
                                   nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
-        self.stage1 = ResidualBlock(w1, w1, 1, block)    # 50 x 50, identity shortcut
-        self.stage2 = ResidualBlock(w1, w2, 2, block)    # 25 x 25
-        self.stage3 = ResidualBlock(w2, w3, 2, block)    # 13 x 13
-        self.stage4 = ResidualBlock(w3, w4, 2, block)    # 7 x 7
+        d1, d2, d3, d4 = depths
+        self.stage1 = stage(w1, w1, 1, d1)    # 50 x 50, identity shortcut
+        self.stage2 = stage(w1, w2, 2, d2)    # 25 x 25
+        self.stage3 = stage(w2, w3, 2, d3)    # 13 x 13
+        self.stage4 = stage(w3, w4, 2, d4)    # 7 x 7
         self.pool = nn.AdaptiveAvgPool2d(1)              # 256 x 7 x 7 -> 256 x 1 x 1 (mean of the 49 positions)
         self.fc = nn.Linear(w4, 1)                       # the regression head: 256 weights + 1 bias
         # output scaling (fixed, NOT learned; buffers are saved in the checkpoint but get no gradient):
@@ -95,8 +106,9 @@ class OwnCNN(nn.Module):
         # last BN of every main path starts at gamma = 0 -> F(x) = 0 -> each block starts as
         # ReLU(shortcut(x)): the untrained network behaves like a shallow one, which makes the
         # first epochs from scratch stable (same idea as torchvision's zero_init_residual=True)
-        for blk in (self.stage1, self.stage2, self.stage3, self.stage4):
-            nn.init.zeros_(blk.main[-1][1].weight)
+        for blk in self.modules():
+            if isinstance(blk, ResidualBlock):
+                nn.init.zeros_(blk.main[-1][1].weight)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.stem(x)

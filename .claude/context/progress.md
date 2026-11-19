@@ -2,6 +2,28 @@
 
 Newest entries on top. Each entry: date, machine, what was done, decisions (with reasons), next steps.
 
+## 2026-11-19 · lab · own CNN improvement → ACCEPTABLE
+**User OK:** "yes do it continue" (one improvement run after own_cnn_run01 missed the limit by 0.28 y).
+
+**Diagnosis:** run01 was underfitting (train L1 5.23 ≈ val 5.79, still falling at epoch 40) → more capacity + more epochs, not more regularization.
+
+**Change (two at once, to save a run):** `own_cnn_d2` = 2 basic blocks per stage (ResNet-18 layout 2-2-2-2, widths 32-64-128-256 = ¼ of ResNet-18), 60 epochs instead of 40. Everything else identical (lr 1e-2, AdamW wd 0.01, 1 warm-up epoch + cosine, batch 128, bf16, L1, same augmentation, output scaling, seed 655).
+- `OwnCNN(depths=...)` in `src/models/own_cnn.py`; depth-1 stages stay a bare block, so the old checkpoints still load.
+- Hand calc (notebook 15.7, checked by hooks): extra blocks add 18,560 + 73,984 + 295,424 + 1,180,672 = 1,568,640 params → **2,795,297**; MACs +199.8 M → **374.1 M**; RF per stage 39 / 95 / 207 / **431** px.
+
+**Runs:**
+- `own_cnn_d2_run01`: **failed** in 0 s (`get_head` did not know the new name). Logged, ~0 Wh. Fixed with `name.startswith("own_cnn")`.
+- `own_cnn_d2_run02`: best val **5.145** at epoch 60 (5.29 at epoch 40); last train L1 3.81; 114 s, **12.40 Wh, 5.76 g CO2eq** (0.207 Wh/epoch, 1.6–2.1 s/epoch).
+- Test (once, 15.8): **test MAE 5.140, RMSE 7.424, R² 0.862 → ACCEPTABLE** (limit 5.483, margin 0.34 y). 0.80 ms/img, 0.0027 Wh/1000 pred, 11.24 MB.
+
+**Caveats for the report:**
+- Another user's Ollama moved to **GPU 0** (our GPU) this morning; it drew 254 W / 96 % right before the test pass. CodeCarbon (NVML board power) counts its power, so the d2 training/benchmark energies are **upper bounds**. Epochs 12–40 at ~2.0 s vs 1.6 s elsewhere suggest contention in that window. `track` logged the warning.
+- Depth and epochs changed together, so their effects can't be separated.
+- The acceptable own CNN costs **more** training CO2 (5.76 g) than ResNet18 full fine-tuning (2.65 g, but ImageNet pre-training not counted); it is cheaper per prediction (0.0027 vs 0.0067 Wh/1000).
+- Own-CNN development total now **13.68 g CO2eq** (all runs containing "own_cnn").
+
+**Next (user decides):** stop and write up, or try to cut the CO2 of an acceptable model (e.g. fewer epochs on this depth), each a new run.
+
 ## 2026-11-18 · lab
 **Done (setup only; no training, no CO2 runs):**
 - Fresh clone; repo-local git identity set (`fouad1233`).
