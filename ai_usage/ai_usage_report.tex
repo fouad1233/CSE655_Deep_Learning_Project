@@ -61,13 +61,13 @@ Date & What I asked & Summary of the answer & Kept / changed / rejected, and why
 11-18 & ``Help me design my own CNN. Should I use bottleneck blocks and residual connections?'' & Compared plain, residual and bottleneck designs by parameters, MACs and receptive field. & \textbf{Changed:} residual basic blocks for the main model, the bottleneck version as the ablation, input fixed at 200\,px. \\
 11-18 & ``Do the six own-CNN steps (code, smoke test, learning-rate check, main run, ablation, test) and commit each.'' & Test MAE 5.765, just above the limit; found and fixed an output-scaling problem; stopped and listed options. & \textbf{Kept.} I chose the next step myself. \\
 11-19 & ``Continue: improve the CNN.'' & Diagnosed underfitting; 2 blocks per stage and 60 epochs; test MAE 5.140, acceptable. & \textbf{Kept,} with both changes in one run to save energy; the report says their effects cannot be separated. \\
-11-19 & ``Would more epochs or zoom augmentation help?'' & Validation was flat over epochs 41--60; neither run is worth its \cotwo{}, since the test set does not measure crop robustness. & \textbf{Kept:} no new runs; crop sensitivity is listed as a limitation. \\
+11-19 & ``Would more epochs or zoom augmentation help?'' & After epoch 41 validation improved by only 0.03 years while the training loss kept falling; neither run is worth its \cotwo{}, since the test set does not measure crop robustness. & \textbf{Kept:} no new runs; crop sensitivity is listed as a limitation. \\
 11-19 & ``Write the report in IEEE \LaTeX{} with paper-style figures; put all architectures on one page; write S and P and show BN/ReLU between the tensors.'' & \LaTeX{} report, one-page architecture figure, operations written between tensors. & \textbf{Changed} several times on my request, to make the figures easier to read and compare. \\
 \bottomrule
 \end{longtable}
 
 \section{Cases where the AI was wrong, incomplete or misleading}
-I logged 20 cases (Appendix~\ref{app:cases}); eight representative ones:
+I logged 21 cases (Appendix~\ref{app:cases}); eight representative ones:
 
 \begin{longtable}{@{}p{0.5cm}p{4.9cm}p{4.9cm}p{5.6cm}@{}}
 \toprule
@@ -131,6 +131,7 @@ I logged 20 cases (Appendix~\ref{app:cases}); eight representative ones:
 18 & 11-19 & \texttt{results.csv} not updated after an extra ResNet18 run (project \cotwo{} 6.51 vs.\ 9.14\,g). \\
 19 & 11-19 & Misleading summary of the MAE-by-age plot (``close to ResNet18 almost everywhere''). \\
 20 & 11-19 & Wrote in the report that most MobileNetV3 parameters sit in the last $1\times1$ conv and the head (true share 33\,\%; blocks 12--15 hold 57\,\%), a claim already corrected once in the slide deck; found when the parameter shares were recomputed with torchvision. \\
+21 & 11-19 & Misread the final run's log: ``epochs 41--60 improved validation by only 0.03 years, flat after epoch 40''; in fact 0.14 years (5.287 $\to$ 5.145, mostly in epoch 41), and validation varied between 5.15 and 5.53 afterwards. \\
 \bottomrule
 \end{longtable}
 \normalsize
