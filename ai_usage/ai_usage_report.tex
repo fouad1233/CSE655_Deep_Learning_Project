@@ -36,12 +36,12 @@ Claude Code (desktop app) & app 2.1.317 (work PC, 2026-11-04/05) and 2.1.289 (la
 \end{tabularx}
 
 \smallskip
-\noindent I used one assistant, running inside the project repository on the work PC (Windows, 2026-11-04/05) and the lab machine (Linux, 2$\times$RTX~5090, 2026-11-18/19). Durable project context (decisions, progress, this log) lives in the repository (\texttt{.claude/context/progress.md}, \texttt{ai\_usage/ai\_log.md}), so every machine saw the same state.
+\noindent I used one assistant, running inside the project repository on the work PC (Windows, 2026-11-04/05) and the lab machine (Linux, 2$\times$RTX~5090, 2026-11-18/20). From it I also started separate agents of the same model for two checks: verifying the bibliography with web search, and reviewing the finished project against the assignment's grading table. Durable project context (decisions, progress, this log) lives in the repository (\texttt{.claude/context/progress.md}, \texttt{ai\_usage/ai\_log.md}), so every machine saw the same state.
 
 \textbf{Rules I set for the assistant.} (1) No training run starts without my explicit OK, because every run costs \cotwo{} and counts against the footprint grade. (2) I decide the phases (cleaning rules, split, input size, models, fine-tuning plan); the AI analyses and proposes. (3) Every line of code and every number must be explained so that I can reproduce it by hand in the oral exam. (4) Every training and evaluation run is wrapped in CodeCarbon, and the test set is used once per final model. (5) In notebooks, only new or changed cells are run. (6) The AI logs its own mistakes here.
 
 \section{Log of the important interactions}
-The full log has 40 rows (\texttt{ai\_usage/ai\_log.md}); the 16 most important ones are below. The last column says what I did with the answer: \textbf{Kept} (used as proposed), \textbf{Changed} (used after I asked for a change) or \textbf{Rejected} (not used), and why.
+The full log has 41 rows (\texttt{ai\_usage/ai\_log.md}); the 17 most important ones are below. The last column says what I did with the answer: \textbf{Kept} (used as proposed), \textbf{Changed} (used after I asked for a change) or \textbf{Rejected} (not used), and why.
 
 \begin{longtable}{@{}p{1.2cm}p{4.3cm}p{5.9cm}p{4.7cm}@{}}
 \toprule
@@ -63,11 +63,12 @@ Date & What I asked & Summary of the answer & Kept / changed / rejected, and why
 11-19 & ``Continue: improve the CNN.'' & Diagnosed underfitting; 2 blocks per stage and 60 epochs; test MAE 5.140, acceptable. & \textbf{Kept,} with both changes in one run to save energy; the report says their effects cannot be separated. \\
 11-19 & ``Would more epochs or zoom augmentation help?'' & After epoch 41 validation improved by only 0.03 years while the training loss kept falling; neither run is worth its \cotwo{}, since the test set does not measure crop robustness. & \textbf{Kept:} no new runs; crop sensitivity is listed as a limitation. \\
 11-19 & ``Write the report in IEEE \LaTeX{} with paper-style figures; put all architectures on one page; write S and P and show BN/ReLU between the tensors.'' & \LaTeX{} report, one-page architecture figure, operations written between tensors. & \textbf{Changed} several times on my request, to make the figures easier to read and compare. \\
+11-19/20 & ``Review my project against the assignment's grading table, as a strict grader would.'' & Fresh agents, each without the earlier results, recomputed the numbers from the logs and listed gaps: an incomplete README, missing training times, unquantified savings, a stale value in \texttt{results.csv}, unreferenced figures, and factual slips in the report (cases 20--22). & \textbf{Kept:} I fixed every point that did not need a new training run, and repeated the review after each round of fixes. \\
 \bottomrule
 \end{longtable}
 
 \section{Cases where the AI was wrong, incomplete or misleading}
-I logged 21 cases (Appendix~\ref{app:cases}); eight representative ones:
+I logged 22 cases (Appendix~\ref{app:cases}); eight representative ones:
 
 \begin{longtable}{@{}p{0.5cm}p{4.9cm}p{4.9cm}p{5.6cm}@{}}
 \toprule
@@ -93,7 +94,7 @@ I logged 21 cases (Appendix~\ref{app:cases}); eight representative ones:
 \item \textbf{Smoke tests and guards.} Every new piece of code ran on 512 images first; test evaluations and demo cells are guarded so they cannot run twice; the split is checked for determinism (same MD5 on re-run).
 \item \textbf{Documentation and papers.} torchvision weight metadata (case~5), the ResNet paper for the 224\,px input, the CodeCarbon documentation for process-mode tracking.
 \item \textbf{Reading the outputs myself.} Three cases (2, 17, 19) were found only because I questioned a figure or a sentence. For the report I re-derived the key numbers and checked every figure against \texttt{results/results.csv}.
-\item \textbf{References.} All 30 bibliography entries of the technical report were checked against the publishers' records (Crossref, CVF, PMLR, ACL Anthology, arXiv) with a second AI agent that used web search; three page ranges were corrected.
+\item \textbf{References and rubric review.} All 30 bibliography entries were checked against the publishers' records (Crossref, CVF, PMLR, ACL Anthology, arXiv) with a separate agent that used web search; three page ranges were corrected. Before submission, fresh agents reviewed the whole project against the assignment's grading table several times; they recomputed the numbers from the logs and pointed out gaps and factual slips (e.g.\ cases 20--22), which I fixed.
 \end{itemize}
 
 \section{Reflection}
@@ -130,8 +131,9 @@ I logged 21 cases (Appendix~\ref{app:cases}); eight representative ones:
 17 & 11-19 & Diagrams hid BatchNorm and ReLU, so the networks looked linear. \\
 18 & 11-19 & \texttt{results.csv} not updated after an extra ResNet18 run (project \cotwo{} 6.51 vs.\ 9.14\,g). \\
 19 & 11-19 & Misleading summary of the MAE-by-age plot (``close to ResNet18 almost everywhere''). \\
-20 & 11-19 & Wrote in the report that most MobileNetV3 parameters sit in the last $1\times1$ conv and the head (true share 33\,\%; blocks 12--15 hold 57\,\%), a claim already corrected once in the slide deck; found when the parameter shares were recomputed with torchvision. \\
+20 & 11-19 & Wrote in the report that most MobileNetV3 parameters sit in the last $1\times1$ conv and the head (true share 33\,\%; blocks 12--15 hold 57\,\%), a claim already corrected once in the slide deck; found when a review agent recomputed the parameter shares with torchvision. \\
 21 & 11-19 & Misread the final run's log: ``epochs 41--60 improved validation by only 0.03 years, flat after epoch 40''; in fact 0.14 years (5.287 $\to$ 5.145, mostly in epoch 41), and validation varied between 5.15 and 5.53 afterwards. \\
+22 & 11-18 & Diagnosed the first CNN as underfitting because its training loss was ``still falling at epoch 40''; the log shows it had levelled off at 5.21--5.23 (the learning rate had reached zero). The diagnosis holds for another reason: a small train--validation gap with both errors high. \\
 \bottomrule
 \end{longtable}
 \normalsize
@@ -139,7 +141,7 @@ I logged 21 cases (Appendix~\ref{app:cases}); eight representative ones:
 \section{Chat exports}
 The Claude Code transcripts are attached in \texttt{ai\_usage/transcripts/}, one Markdown file per machine and period:
 \begin{itemize}
-\item \texttt{2026-11-18\_19\_lab\_session.md}: lab machine, 2026-11-18/19 (setup on the lab machine, pipeline, standard models, bias analysis, own CNN, technical report, this report);
+\item \texttt{2026-11-18\_20\_lab\_session.md}: lab machine, 2026-11-18/20 (setup on the lab machine, pipeline, standard models, bias analysis, own CNN, technical report, this report, and the reviews against the grading table);
 \item \texttt{2026-11-04\_05\_work\_pc\_1.md}: work PC, 2026-11-04/05 (assignment reading, dataset choice, data exploration and cleaning, architecture slide deck);
 \item \texttt{2026-11-04\_05\_work\_pc\_2.md}: work PC, 2026-11-05 (hand-calculated parameter counts, input-size slides).
 \end{itemize}
