@@ -55,7 +55,7 @@ To repeat the measurements, move `logs/runs.csv` and `logs/emissions/emissions.c
 Re-runs give close but not bit-identical numbers: bf16 mixed precision and cuDNN's autotuned kernels are not
 deterministic on the GPU, so expect MAEs within a few hundredths of a year and energies within a few percent.
 
-| Notebook section (code cell) | What it does | Outputs |
+| Notebook section (cell index, as in `--list`) | What it does | Outputs |
 |---|---|---|
 | 1–4 (cells 2–8) | setup, split check, CodeCarbon helper `track()`, uint8 image cache on the GPU | `data/cache/` |
 | 5–6 (10, 12) | regression heads, `evaluate()`, mean/median baseline | `results/results.csv` (baselines) |

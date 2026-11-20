@@ -31,7 +31,7 @@ Fouad Aladhami (Student No.\ 254201001408) \quad M.Sc.\ Program in Artificial In
 \toprule
 Tool & Version / model & Used for \\
 \midrule
-Claude Code (desktop app) & app 2.1.317 (work PC, 2026-11-04/05) and 2.1.289 (lab machine, 2026-11-18/19); model Claude Opus 5.5 (\texttt{claude-opus-5-5}) & Reading the assignment, dataset comparison, environment setup on three machines, data-exploration and pipeline code, debugging, plots, experiment design discussions, hand-calculation checks, the architecture slide deck and diagram renderer, the \LaTeX{} technical report and a first draft of this report. \\
+Claude Code (desktop app) & app 2.1.317 (work PC, 2026-11-04/05) and 2.1.325 (lab machine, 2026-11-18/20); model Claude Opus 5.5 (\texttt{claude-opus-5-5}) & Reading the assignment, dataset comparison, environment setup on three machines, data-exploration and pipeline code, debugging, plots, experiment design discussions, hand-calculation checks, the architecture slide deck and diagram renderer, the \LaTeX{} technical report and a first draft of this report. \\
 \bottomrule
 \end{tabularx}
 
@@ -63,12 +63,12 @@ Date & What I asked & Summary of the answer & Kept / changed / rejected, and why
 11-19 & ``Continue: improve the CNN.'' & Diagnosed underfitting; 2 blocks per stage and 60 epochs; test MAE 5.140, acceptable. & \textbf{Kept,} with both changes in one run to save energy; the report says their effects cannot be separated. \\
 11-19 & ``Would more epochs or zoom augmentation help?'' & After epoch 41 validation improved by only 0.03 years while the training loss kept falling; neither run is worth its \cotwo{}, since the test set does not measure crop robustness. & \textbf{Kept:} no new runs; crop sensitivity is listed as a limitation. \\
 11-19 & ``Write the report in IEEE \LaTeX{} with paper-style figures; put all architectures on one page; write S and P and show BN/ReLU between the tensors.'' & \LaTeX{} report, one-page architecture figure, operations written between tensors. & \textbf{Changed} several times on my request, to make the figures easier to read and compare. \\
-11-19/20 & ``Review my project against the assignment's grading table, as a strict grader would.'' & Fresh agents, each without the earlier results, recomputed the numbers from the logs and listed gaps: an incomplete README, missing training times, unquantified savings, a stale value in \texttt{results.csv}, unreferenced figures, and factual slips in the report (cases 20--22). & \textbf{Kept:} I fixed every point that did not need a new training run, and repeated the review after each round of fixes. \\
+11-19/20 & ``Review my project against the assignment's grading table, as a strict grader would.'' & Fresh agents, each without the earlier results, recomputed the numbers from the logs and listed gaps: an incomplete README, missing training times, unquantified savings, a stale value in \texttt{results.csv}, unreferenced figures, and factual slips (cases 20--24). & \textbf{Kept:} I fixed every point that did not need a new training run, and repeated the review after each round of fixes. \\
 \bottomrule
 \end{longtable}
 
 \section{Cases where the AI was wrong, incomplete or misleading}
-I logged 22 cases (Appendix~\ref{app:cases}); eight representative ones:
+I logged 24 cases (Appendix~\ref{app:cases}); eight representative ones:
 
 \begin{longtable}{@{}p{0.5cm}p{4.9cm}p{4.9cm}p{5.6cm}@{}}
 \toprule
@@ -94,7 +94,7 @@ I logged 22 cases (Appendix~\ref{app:cases}); eight representative ones:
 \item \textbf{Smoke tests and guards.} Every new piece of code ran on 512 images first; test evaluations and demo cells are guarded so they cannot run twice; the split is checked for determinism (same MD5 on re-run).
 \item \textbf{Documentation and papers.} torchvision weight metadata (case~5), the ResNet paper for the 224\,px input, the CodeCarbon documentation for process-mode tracking.
 \item \textbf{Reading the outputs myself.} Three cases (2, 17, 19) were found only because I questioned a figure or a sentence. For the report I re-derived the key numbers and checked every figure against \texttt{results/results.csv}.
-\item \textbf{References and rubric review.} All 30 bibliography entries were checked against the publishers' records (Crossref, CVF, PMLR, ACL Anthology, arXiv) with a separate agent that used web search; three page ranges were corrected. Before submission, fresh agents reviewed the whole project against the assignment's grading table several times; they recomputed the numbers from the logs and pointed out gaps and factual slips (e.g.\ cases 20--22), which I fixed.
+\item \textbf{References and rubric review.} All 30 bibliography entries were checked against the publishers' records (Crossref, CVF, PMLR, ACL Anthology, arXiv) with a separate agent that used web search; three page ranges were corrected. Before submission, fresh agents reviewed the whole project against the assignment's grading table several times; they recomputed the numbers from the logs and pointed out gaps and factual slips (e.g.\ cases 20--24), which I fixed.
 \end{itemize}
 
 \section{Reflection}
@@ -134,6 +134,8 @@ I logged 22 cases (Appendix~\ref{app:cases}); eight representative ones:
 20 & 11-19 & Wrote in the report that most MobileNetV3 parameters sit in the last $1\times1$ conv and the head (true share 33\,\%; blocks 12--15 hold 57\,\%), a claim already corrected once in the slide deck; found when a review agent recomputed the parameter shares with torchvision. \\
 21 & 11-19 & Misread the final run's log: ``epochs 41--60 improved validation by only 0.03 years, flat after epoch 40''; in fact 0.14 years (5.287 $\to$ 5.145, mostly in epoch 41), and validation varied between 5.15 and 5.53 afterwards. \\
 22 & 11-18 & Diagnosed the first CNN as underfitting because its training loss was ``still falling at epoch 40''; the log shows it had levelled off at 5.21--5.23 (the learning rate had reached zero). The diagnosis holds for another reason: a small train--validation gap with both errors high. \\
+23 & 11-20 & Claimed fine-tuned ResNet18 was the cheapest accurate model in training and project \cotwo{}; the MobileNetV3 family (8.81\,g) and ResNet18 strategy A (1.40\,g training) were cheaper. Reworded to compare families. \\
+24 & 11-19 & Gave the lab machine's Claude Code version as 2.1.289 (the command-line tool); the session files record 2.1.325 for the app. \\
 \bottomrule
 \end{longtable}
 \normalsize
