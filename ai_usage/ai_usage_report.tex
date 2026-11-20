@@ -41,7 +41,7 @@ Claude Code (desktop app) & app 2.1.289 (lab machine); model Claude Opus 5.5 (\t
 \textbf{Rules I set for the assistant.} (1) No training run starts without my explicit OK, because every run costs \cotwo{} and counts against the footprint grade. (2) I decide the phases (cleaning rules, split, input size, models, fine-tuning plan); the AI analyses and proposes. (3) Every line of code and every number must be explained so that I can reproduce it by hand in the oral exam. (4) Every training and evaluation run is wrapped in CodeCarbon, and the test set is used once per final model. (5) In notebooks, only new or changed cells are run. (6) The AI logs its own mistakes here.
 
 \section{Log of the important interactions}
-The full log has 43 rows (\texttt{ai\_usage/ai\_log.md}); the 16 most important ones are below. The last column says what I did with the answer: \textbf{Kept} (used as proposed), \textbf{Changed} (used after I asked for a change) or \textbf{Rejected} (not used), and why.
+The full log has 44 rows (\texttt{ai\_usage/ai\_log.md}); the 17 most important ones are below. The last column says what I did with the answer: \textbf{Kept} (used as proposed), \textbf{Changed} (used after I asked for a change) or \textbf{Rejected} (not used), and why.
 
 \begin{longtable}{@{}p{1.2cm}p{4.3cm}p{5.9cm}p{4.7cm}@{}}
 \toprule
@@ -54,6 +54,7 @@ Date & What I asked & Summary of the answer & Kept / changed / rejected, and why
 11-05 & ``The standard ResNet18 input is $224\times224$; why do the slides use 128\,px?'' & Explained that parameters do not depend on input size but feature maps and MACs do (224\,px: 1.81\,G, 200: 1.56\,G, 128: 0.59\,G MACs). & \textbf{Changed:} I chose 200\,px, the native UTKFace size (later also required by the professor). \\
 11-18 & ``Set up the project on the lab machine (2$\times$RTX~5090).'' & The suggested CUDA~12.8 build of the pinned PyTorch did not exist; installed the CUDA~13.2 build and verified it with a real matrix multiplication on both GPUs. & \textbf{Kept.} \\
 11-18 & ``Build the shared pipeline step by step and explain each cell: split, image cache, CodeCarbon tracking.'' & Seeded stratified split, image cache on the GPU, CodeCarbon wrapper; switched to process-only CPU measurement because other users share the machine. & \textbf{Kept.} My choices: 70/15/15 split stratified by age band and race, MobileNetV3 V1 weights. \\
+11-18 & ``You suggest giving read access to the RAPL CPU energy counters (needs \texttt{sudo}); should I?'' & The AI proposed it so CodeCarbon could measure CPU energy instead of estimating it. A process check afterwards showed that other users load the shared CPU with about 120\,W, which RAPL (whole CPU package) would have charged to our runs. & \textbf{Rejected:} I had already run the \texttt{chmod}, but we did not use RAPL; CPU energy is estimated per process instead (CodeCarbon's process mode). \\
 11-18 & ``Isn't it better to train the new head first and then only the last layers?'' & Explained head-first fine-tuning and its energy benefit (frozen early layers need no backward pass); implemented it as ``option A''. & \textbf{Kept,} and I asked for full fine-tuning as well so I could compare both. \\
 11-18 & ``Evaluate the four standard-model runs on the test set.'' & One protected test pass per run; best: ResNet18 full, MAE 4.768, so my CNN must reach $\le5.483$. & \textbf{Kept.} I chose to test all four runs; the selection used validation only. \\
 11-18 & ``Is the model biased towards older ages because some ages have more images? Should I balance the data?'' & Analysed the signed error per age band on the validation set: predictions are pulled towards the mean age (young too old, old too young); predicted that balancing would not lower the MAE. & \textbf{Kept the analysis.} I tested balancing with one run (val MAE 4.76 $\to$ 4.96) and kept the plain loss. \\
@@ -119,7 +120,7 @@ I logged 20 cases (Appendix~\ref{app:cases}); eight representative ones:
 6 & 11-18 & Suggested RAPL CPU energy on a shared machine, which would have counted other users' load. \\
 7 & 11-18 & Smoke-test validation subset was the first 256 rows (sorted by name, mean age 15.5). \\
 8 & 11-18 & Demo cells re-ran and logged up to 9 times; fixing it overwrote saved notebook outputs (restored). \\
-9 & 11-18 & Estimated 1--3\,min and 10--25\,Wh per run; measured 15--32\,s and 2--4\,Wh. \\
+9 & 11-18 & Estimated 1--3\,min and 10--25\,Wh for each of the first two standard runs; measured 15 and 32\,s, 2.0 and 4.1\,Wh. \\
 10 & 11-18 & Wrong explanation of the first-step loss (random head weights); real cause: the first batch's mean age. \\
 11 & 11-18 & Receptive field 159 instead of 191 (arithmetic slip, caught by an assert). \\
 12 & 11-18 & No output scaling for the from-scratch head; first learning-rate search wasted (1.1\,Wh). \\
@@ -139,7 +140,7 @@ I logged 20 cases (Appendix~\ref{app:cases}); eight representative ones:
 The Claude Code transcripts are attached in \texttt{ai\_usage/transcripts/}, one Markdown file per machine and period:
 \begin{itemize}
 \item \texttt{2026-11-18\_19\_lab\_session.md}: lab machine, 2026-11-18/19 (setup on the lab machine, pipeline, standard models, bias analysis, own CNN, technical report, this report);
-\item the work-PC sessions of 2026-11-04/05 (assignment reading, dataset choice, data exploration and cleaning, architecture slide deck).
+\item \texttt{2026-11-04\_05\_work\_pc\_*.md}: work PC, 2026-11-04/05 (assignment reading, dataset choice, data exploration and cleaning, architecture slide deck).
 \end{itemize}
 Each file shows every user and assistant message in full; tool calls are listed by name and description.
 
