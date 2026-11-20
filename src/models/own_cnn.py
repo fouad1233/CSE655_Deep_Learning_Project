@@ -1,6 +1,7 @@
 """Our own CNN for age regression, trained from scratch (input 3 x 200 x 200, output 1 number = age).
 
-Design (chosen 2026-11-18, hand calculations in notebook 02 section 15):
+Design. The table below is the FIRST version (v1, depths = (1, 1, 1, 1), chosen 2026-11-18; hand calculations in
+notebook 02 section 15). The FINAL model uses depths = (2, 2, 2, 2), see the note after the table.
 
     stem     conv3x3  3->32, stride 2   -> 32 x 100 x 100     RF   3   jump 2
              maxpool 3x3, stride 2      -> 32 x  50 x  50     RF   7   jump 4
@@ -10,7 +11,7 @@ Design (chosen 2026-11-18, hand calculations in notebook 02 section 15):
     stage4   block 128->256, stride 2   -> 256 x  7 x  7      RF 191   jump 32
     head     global average pool -> 256 -> Linear(256, 1) -> age = mean + std * output (fixed scaling)
 
-    depths = (2, 2, 2, 2) (variant "own_cnn_d2", 2026-11-19): every stage gets a second block with stride 1 and an
+    FINAL: depths = (2, 2, 2, 2) (variant "own_cnn_d2", 2026-11-19): every stage gets a second block with stride 1 and an
     identity shortcut (same layout as ResNet-18 at half its widths, so ~1/4 of its params). RF after each stage: 39, 95, 207, 431.
 
     block = "basic"      : conv3x3 -> BN -> ReLU -> conv3x3 -> BN, + shortcut, ReLU      (main design)

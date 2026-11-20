@@ -41,7 +41,7 @@ Claude Code (desktop app) & app 2.1.317 (work PC, 2026-11-04/05) and 2.1.289 (la
 \textbf{Rules I set for the assistant.} (1) No training run starts without my explicit OK, because every run costs \cotwo{} and counts against the footprint grade. (2) I decide the phases (cleaning rules, split, input size, models, fine-tuning plan); the AI analyses and proposes. (3) Every line of code and every number must be explained so that I can reproduce it by hand in the oral exam. (4) Every training and evaluation run is wrapped in CodeCarbon, and the test set is used once per final model. (5) In notebooks, only new or changed cells are run. (6) The AI logs its own mistakes here.
 
 \section{Log of the important interactions}
-The full log has 44 rows (\texttt{ai\_usage/ai\_log.md}); the 17 most important ones are below. The last column says what I did with the answer: \textbf{Kept} (used as proposed), \textbf{Changed} (used after I asked for a change) or \textbf{Rejected} (not used), and why.
+The full log has 40 rows (\texttt{ai\_usage/ai\_log.md}); the 16 most important ones are below. The last column says what I did with the answer: \textbf{Kept} (used as proposed), \textbf{Changed} (used after I asked for a change) or \textbf{Rejected} (not used), and why.
 
 \begin{longtable}{@{}p{1.2cm}p{4.3cm}p{5.9cm}p{4.7cm}@{}}
 \toprule
@@ -63,7 +63,6 @@ Date & What I asked & Summary of the answer & Kept / changed / rejected, and why
 11-19 & ``Continue: improve the CNN.'' & Diagnosed underfitting; 2 blocks per stage and 60 epochs; test MAE 5.140, acceptable. & \textbf{Kept,} with both changes in one run to save energy; the report says their effects cannot be separated. \\
 11-19 & ``Would more epochs or zoom augmentation help?'' & Validation was flat over epochs 41--60; neither run is worth its \cotwo{}, since the test set does not measure crop robustness. & \textbf{Kept:} no new runs; crop sensitivity is listed as a limitation. \\
 11-19 & ``Write the report in IEEE \LaTeX{} with paper-style figures; put all architectures on one page; write S and P and show BN/ReLU between the tensors.'' & \LaTeX{} report, one-page architecture figure, operations written between tensors. & \textbf{Changed} several times on my request, to make the figures easier to read and compare. \\
-11-19 & ``Grade the project as the professor would, using the assignment's rubric.'' & Three rounds with a fresh, independent agent each time: 82, 88 and 93/100. Its lists of fixes included the README, the final weights, a stale value in \texttt{results.csv}, training time, error vs.\ project \cotwo{}, quantified efficiency savings, a corrected estimate for the shared-GPU run, the chat export and several small factual slips & \textbf{Kept:} I fixed every point that did not need new runs; the work-PC chat export has to be made on that PC. \\
 \bottomrule
 \end{longtable}
 
@@ -94,7 +93,7 @@ I logged 20 cases (Appendix~\ref{app:cases}); eight representative ones:
 \item \textbf{Smoke tests and guards.} Every new piece of code ran on 512 images first; test evaluations and demo cells are guarded so they cannot run twice; the split is checked for determinism (same MD5 on re-run).
 \item \textbf{Documentation and papers.} torchvision weight metadata (case~5), the ResNet paper for the 224\,px input, the CodeCarbon documentation for process-mode tracking.
 \item \textbf{Reading the outputs myself.} Three cases (2, 17, 19) were found only because I questioned a figure or a sentence. For the report I re-derived the key numbers and checked every figure against \texttt{results/results.csv}.
-\item \textbf{References and a rubric check.} All 30 bibliography entries were checked against the publishers' records (Crossref, CVF, PMLR, ACL Anthology, arXiv); three page ranges were corrected. Before submission I had independent AI agents grade the project against the assignment's rubric three times (82, 88, 93/100). Each recomputed the per-layer table, the footprint totals and every derived estimate, and listed gaps and factual slips (e.g.\ an incomplete README, unquantified savings, a wrong statement about MobileNetV3's parameters); I fixed all of them that did not require new training.
+\item \textbf{References.} All 30 bibliography entries of the technical report were checked against the publishers' records (Crossref, CVF, PMLR, ACL Anthology, arXiv) with a second AI agent that used web search; three page ranges were corrected.
 \end{itemize}
 
 \section{Reflection}
@@ -131,7 +130,7 @@ I logged 20 cases (Appendix~\ref{app:cases}); eight representative ones:
 17 & 11-19 & Diagrams hid BatchNorm and ReLU, so the networks looked linear. \\
 18 & 11-19 & \texttt{results.csv} not updated after an extra ResNet18 run (project \cotwo{} 6.51 vs.\ 9.14\,g). \\
 19 & 11-19 & Misleading summary of the MAE-by-age plot (``close to ResNet18 almost everywhere''). \\
-20 & 11-19 & Wrote in the report that most MobileNetV3 parameters sit in the last $1\times1$ conv and the head (true share 33\,\%; blocks 12--15 hold 57\,\%), a claim already corrected once in the slide deck; caught by the third rubric check. \\
+20 & 11-19 & Wrote in the report that most MobileNetV3 parameters sit in the last $1\times1$ conv and the head (true share 33\,\%; blocks 12--15 hold 57\,\%), a claim already corrected once in the slide deck; found when the parameter shares were recomputed with torchvision. \\
 \bottomrule
 \end{longtable}
 \normalsize

@@ -76,6 +76,7 @@ After the notebook, run the two plotting/aggregation scripts (CSV arithmetic and
 python scripts/update_results_footprint.py   # train_s, project_kwh, project_kg_co2 in results/results.csv (sums of logs/runs.csv)
 python scripts/plot_error_vs_co2.py          # Fig. 6
 python scripts/draw_report_archs.py          # Fig. 2 and Fig. 4 (architecture diagrams from forward hooks)
+python scripts/model_facts.py results/model_facts.json   # params, MACs at 224/200/128 px, CPU latency of the candidate models (CPU only, not tracked)
 cd report && pdflatex main && bibtex main && pdflatex main && pdflatex main
 ```
 
@@ -99,6 +100,7 @@ cd report && pdflatex main && bibtex main && pdflatex main && pdflatex main
 | Fig. 12 final CNN training run | cell 54 (`train_model`) → `train_own_cnn_d2_run02.png` |
 | Fig. 13 balanced loss | cell 36 → `balanced_loss_vs_plain_val.png` |
 | Project totals (72.0 Wh, 33.5 g) | `python scripts/update_results_footprint.py` (last line) |
+| ResNet18 MACs at 128 px (0.59 G, §III-C) | `scripts/model_facts.py` → `results/model_facts.json` |
 
 ## 5. Using the final model
 
